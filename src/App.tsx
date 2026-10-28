@@ -105,7 +105,7 @@ export default function App() {
   };
 
   // Profile Image Source provided by user
-  const profileImg = "https://lh3.googleusercontent.com/gg-dl/AHiVA1kicwLP81vCjQlTfUsJLYmaCotCz-k-ySdOdWB6D3sEVcZwfype6pgjB4aTWEVLlXo57OFsVBkeauNveYrRgYxswgmzo_Z9LtBpn642O6qkoQf2BlVPVb-vsIdld6bmnNmd-o91j0G_F1yyQWbvL8tmzfRwX2dqhNPQ8M5G02vIRw6M";
+  const profileImg = "./profile.png";
 
   // Data Objects
   const projects = [
