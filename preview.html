@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muhammad Daud Ali Lashari | Tech Entrepreneur & Full-Stack Architect</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              blue: '#2563eb',
+              cyan: '#06b6d4',
+              amber: '#f59e0b',
+              dark: '#030712'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- React & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    code, kbd, .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    @media print {
+      body { background: white !important; color: #111827 !important; }
+      header, footer, nav, .no-print, button, #command-palette-backdrop { display: none !important; }
+      .print-page { box-shadow: none !important; border: none !important; width: 100% !important; padding: 0 !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased selection:bg-cyan-500/30 selection:text-cyan-300">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    // SVG Icon Helper Component
+    function Icon({ name, className = "w-4 h-4" }) {
+      const icons = {
+        trophy: <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.45 1-1 1H8c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1h-1c-.55 0-1-.45-1-1v-2.34M7 2h10v7a5 5 0 0 1-10 0V2Z"/>,
+        mapPin: <><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></>,
+        graduationCap: <><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></>,
+        award: <><circle cx="12" cy="8" r="6"/><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/></>,
+        linkedin: <><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></>,
+        globe: <><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></>,
+        sun: <><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></>,
+        moon: <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>,
+        menu: <><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></>,
+        x: <><path d="M18 6 6 18"/><path d="m6 6 12 12"/></>,
+        search: <><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>,
+        calculator: <><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/></>,
+        command: <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/>,
+        code: <><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></>,
+        barChart: <><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></>,
+        rocket: <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09zM12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>,
+        brain: <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>,
+        check: <polyline points="20 6 9 17 4 12"/>,
+        checkCircle: <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>,
+        externalLink: <><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></>,
+        fileText: <><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8M16 13H8M16 17H8"/></>,
+        printer: <><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></>,
+        copy: <><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></>,
+        send: <><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>,
+        mail: <><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></>,
+        clock: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
+        shieldCheck: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></>,
+        layers: <><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>,
+        chevronRight: <path d="m9 18 6-6-6-6"/>,
+        arrowRight: <><line x1="5" x2="19" y1="12" y2="12"/><polyline points="12 5 19 12 12 19"/></>,
+        briefcase: <><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>,
+        building: <><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/></>
+      };
+
+      return (
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2" 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          className={className}
+        >
+          {icons[name] || null}
+        </svg>
+      );
+    }
+
+    function PortfolioApp() {
+      const [darkMode, setDarkMode] = useState(true);
+      const [activeTab, setActiveTab] = useState('all');
+      const [searchQuery, setSearchQuery] = useState('');
+      const [selectedProject, setSelectedProject] = useState(null);
+      const [formStatus, setFormStatus] = useState(null);
+      const [showResumeModal, setShowResumeModal] = useState(false);
+      const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+      const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+      const [paletteSearch, setPaletteSearch] = useState('');
+      const [copiedEmail, setCopiedEmail] = useState(false);
+
+      // ROI / Scoping Calculator State
+      const [calcProjectType, setCalcProjectType] = useState('web');
+      const [calcScale, setCalcScale] = useState('standard');
+      const [calcAddons, setCalcAddons] = useState({
+        scopingEngine: true,
+        authSecurity: true,
+        aiOrchestration: false,
+        analyticsGIS: false,
+        multiRegion: true,
+      });
+
+      // Contact form state
+      const [contactSubject, setContactSubject] = useState('');
+      const [contactMessage, setContactMessage] = useState('');
+      const [contactName, setContactName] = useState('');
+      const [contactEmail, setContactEmail] = useState('');
+
+      useEffect(() => {
+        if (darkMode) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }, [darkMode]);
+
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            setCommandPaletteOpen((prev) => !prev);
+          }
+          if (e.key === 'Escape') {
+            setCommandPaletteOpen(false);
+            setSelectedProject(null);
+            setShowResumeModal(false);
+            setMobileMenuOpen(false);
+          }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, []);
+
+      const toggleDarkMode = () => setDarkMode(!darkMode);
+
+      const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+        setCopiedEmail(true);
+        setTimeout(() => setCopiedEmail(false), 2200);
+      };
+
+      const profileImg = "https://lh3.googleusercontent.com/gg-dl/AHiVA1kicwLP81vCjQlTfUsJLYmaCotCz-k-ySdOdWB6D3sEVcZwfype6pgjB4aTWEVLlXo57OFsVBkeauNveYrRgYxswgmzo_Z9LtBpn642O6qkoQf2BlVPVb-vsIdld6bmnNmd-o91j0G_F1yyQWbvL8tmzfRwX2dqhNPQ8M5G02vIRw6M";
+
+      const projects = [
+        {
+          id: 'aeif-showdown-2026',
+          title: 'AEIF International AI Showdown Pitch',
+          category: 'ai',
+          categoryLabel: 'AI & Global Innovation',
+          badge: '🏆 Top 5 Finalist @ FAST University',
+          description: 'Pitched an innovative AI solution and honored in the Top 5 at the 4th International AEIF Foundation AI Showdown 2026 at FAST-NUCES Lahore.',
+          longDescription: 'Selected among elite international and national teams at FAST University, Lahore. Presented a high-impact AI proposal before an esteemed panel of international jurors and industry leaders, achieving a top 5 global finish for technological viability, novelty, and commercial scalability.',
+          techStack: ['AI System Design', 'Generative AI', 'Predictive Modeling', 'FastAPI', 'Executive Pitching'],
+          metrics: ['Top 5 Rank Internationally', 'Pitched at FAST University Lahore', '4th AEIF Foundation Laureate'],
+          link: 'https://gozepra.tech'
+        },
+        {
+          id: 'lahore-pulse',
+          title: 'Lahore Pulse AI — Urban Intelligence Dashboard',
+          category: 'ai',
+          categoryLabel: 'AI & Civic Technology',
+          badge: 'Civic Innovation Hackathon 2026',
+          description: 'AI-driven city intelligence platform providing real-time air quality indexing (AQI), urban traffic forecasting, and automated citizen issue reporting in Lahore.',
+          longDescription: 'Developed for the Civic Innovation Hackathon 2026 at Lahore Garrison University (LGU). Integrates real-time GIS spatial maps, AI sentiment analysis for civic feedback, and lightweight time-series forecasting for regional AQI levels.',
+          techStack: ['Next.js 15', 'React', 'Tailwind CSS', 'TypeScript', 'AI Analytics', 'Leaflet GIS'],
+          metrics: ['LGU Civic Innovation Showcase', 'Real-Time AQI & Mobility Engine', 'Sub-second Response Times'],
+          link: 'https://gozepra.tech'
+        },
+        {
+          id: 'zepra-tech-suite',
+          title: 'Zepra Tech Enterprise Web & Scoping Engine',
+          category: 'web',
+          categoryLabel: 'Enterprise Cloud Systems',
+          badge: 'Flagship Core Product',
+          description: 'Full-stack client onboarding platform featuring real-time project scoping calculators, dynamic ROI forecasting engines, and seamless cloud services.',
+          longDescription: 'Architected and deployed as CEO of Zepra Tech. Serves dual-region enterprise clients (Lahore, PK & Andover, MA). Built on Next.js 15 with custom server actions for instantaneous cost estimation and lead pipeline management.',
+          techStack: ['Next.js 15', 'React', 'TypeScript', 'Tailwind CSS', 'Node.js', 'PostgreSQL'],
+          metrics: ['45% Conversion Lift', 'Dual-Region Infrastructure (PK & US)', 'Integrated Scoping Engine'],
+          link: 'https://gozepra.tech'
+        },
+        {
+          id: 'softec-26-entry',
+          title: 'SOFTEC 26 Web Innovation Platform',
+          category: 'web',
+          categoryLabel: 'Full-Stack Web Dev',
+          badge: 'FAST-NUCES SOFTEC 2026',
+          description: 'High-performance web architecture built for the SOFTEC 2026 Web Development Competition at FAST-NUCES Lahore by Team Zepra Tech.',
+          longDescription: 'Built under competitive speed constraints during SOFTEC 2026. Features modular state design, full accessibility compliance, and optimized web vitals for instantaneous state synchronization across distributed client nodes.',
+          techStack: ['React', 'Tailwind CSS', 'Framer Motion', 'REST API', 'Vite'],
+          metrics: ['FAST-NUCES SOFTEC Participant', '100 Lighthouse Performance', 'Zero Layout Shift'],
+          link: 'https://gozepra.tech'
+        },
+        {
+          id: 'real-estate-engine',
+          title: 'Real Estate Multi-Channel Growth Engine',
+          category: 'marketing',
+          categoryLabel: 'Digital Marketing & Growth',
+          badge: 'Enterprise Performance Marketing',
+          description: 'GEO/AEO search positioning and multi-channel paid ad growth engines for premier real estate ventures across DHA Lahore, Mangla Greens & Al Ghani Garden.',
+          longDescription: 'End-to-end performance marketing framework integrating Generative Engine Optimization (GEO) and Answer Engine Optimization (AEO) to dominate AI-driven search engine results (Perplexity, ChatGPT, Google SGE) alongside targeted Meta and Google Ads.',
+          techStack: ['GEO / AEO Optimization', 'Meta Ads Manager', 'Google Ads', 'TikTok Ads', 'Conversion Funnels'],
+          metrics: ['3.2x Campaign ROI', 'Top AI Search Indexing', 'High-Ticket Sales Conversions'],
+          link: 'https://gozepra.tech'
+        }
+      ];
+
+      const skillCategories = [
+        {
+          title: 'Full-Stack Web Engineering',
+          iconName: 'code',
+          skills: ['Next.js 15', 'React.js', 'Tailwind CSS', 'TypeScript', 'Node.js', 'REST APIs', 'Framer Motion', 'PostgreSQL / SQL']
+        },
+        {
+          title: 'Digital Marketing & Next-Gen Search Strategy',
+          iconName: 'barChart',
+          skills: ['GEO (Generative Engine Opt.)', 'AEO (Answer Engine Opt.)', 'SEO Strategy', 'Meta Ads Manager', 'Google Ads', 'TikTok Ad Campaigns', 'Funnel Optimization']
+        },
+        {
+          title: 'AI, Logic & Computer Science Core',
+          iconName: 'brain',
+          skills: ['AI Pitching & Architecture', 'Digital Logic Design', 'SQL Systems', 'Data Structures & Algorithms', 'System Analysis', 'Software Lifecycle']
+        }
+      ];
+
+      const experiences = [
+        {
+          role: 'Chief Executive Officer & Business Development Director',
+          company: 'Zepra Tech',
+          period: '2024 – Present',
+          location: 'DHA Phase 8, Lahore, PK | Andover, MA, USA',
+          bullets: [
+            'Direct overall technical strategy, client growth pipelines, and software project execution.',
+            'Architect modern full-stack web applications using Next.js 15, React, and Tailwind CSS.',
+            'Pioneer Next-Gen search strategies (GEO, AEO) and performance advertising campaigns for enterprise clients.'
+          ]
+        },
+        {
+          role: 'IT Training & Systems Operations Specialist',
+          company: 'Integrated IT Training & Tech Solutions',
+          period: '2023 – Present',
+          location: 'Lahore, Pakistan',
+          bullets: [
+            'Organize technical course modules, automated scheduling frameworks, and administrative CRM integrations.',
+            'Mentor aspiring tech talent in web development fundamentals, database logic, and modern IT workflows.'
+          ]
+        }
+      ];
+
+      const filteredProjects = useMemo(() => {
+        return projects.filter(p => {
+          const matchesTab = activeTab === 'all' || p.category === activeTab;
+          const matchesQuery = searchQuery === '' || 
+            p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.techStack.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
+            p.categoryLabel.toLowerCase().includes(searchQuery.toLowerCase());
+          return matchesTab && matchesQuery;
+        });
+      }, [activeTab, searchQuery]);
+
+      const calculatedEstimates = useMemo(() => {
+        let baseDays = 14;
+        let baseLift = 30;
+        let baseROI = 2.8;
+
+        if (calcProjectType === 'web') { baseDays = 14; baseLift = 40; baseROI = 3.2; }
+        else if (calcProjectType === 'ai') { baseDays = 21; baseLift = 48; baseROI = 3.8; }
+        else if (calcProjectType === 'geo') { baseDays = 10; baseLift = 55; baseROI = 4.2; }
+        else if (calcProjectType === 'saas') { baseDays = 30; baseLift = 45; baseROI = 3.5; }
+
+        if (calcScale === 'mvp') { baseDays = Math.round(baseDays * 0.7); baseLift -= 5; }
+        else if (calcScale === 'enterprise') { baseDays = Math.round(baseDays * 1.6); baseLift += 15; baseROI += 0.6; }
+
+        let addonCount = 0;
+        Object.values(calcAddons).forEach(v => { if (v) addonCount++; });
+
+        const totalDays = baseDays + addonCount * 3;
+        const totalLift = Math.min(baseLift + addonCount * 4, 85);
+        const totalROI = (baseROI + addonCount * 0.15).toFixed(1);
+
+        return {
+          weeks: `${Math.ceil(totalDays / 7)} Weeks (${totalDays} Workdays)`,
+          lift: `+${totalLift}% Projected Lift`,
+          roi: `${totalROI}x Target ROI`,
+          tier: calcScale === 'enterprise' ? 'Enterprise Flagship' : calcScale === 'mvp' ? 'Rapid Launch MVP' : 'Core Production Grade'
+        };
+      }, [calcProjectType, calcScale, calcAddons]);
+
+      const transferCalculatorToContact = () => {
+        const summary = `Inquiry based on Scoping Calculator:
+- System Type: ${calcProjectType.toUpperCase()} Platform
+- Scale: ${calcScale.toUpperCase()}
+- Add-ons: ${Object.entries(calcAddons).filter(([_, v]) => v).map(([k]) => k).join(', ')}
+- Projected Timeline: ${calculatedEstimates.weeks}
+- Targeted Conversion: ${calculatedEstimates.lift}`;
+
+        setContactSubject(`Project Scope Request: ${calcProjectType.toUpperCase()} (${calcScale.toUpperCase()})`);
+        setContactMessage(summary);
+
+        const contactElem = document.getElementById('contact');
+        if (contactElem) {
+          contactElem.scrollIntoView({ behavior: 'smooth' });
+        }
+      };
+
+      const handleContactSubmit = (e) => {
+        e.preventDefault();
+        setFormStatus('sending');
+        setTimeout(() => {
+          setFormStatus('success');
+        }, 900);
+      };
+
+      const paletteItems = [
+        { title: 'View 4th AEIF AI Showdown Honors', category: 'Honors', action: () => { setCommandPaletteOpen(false); setSelectedProject(projects[0]); } },
+        { title: 'Explore Lahore Pulse AI (Civic Hackathon)', category: 'Honors', action: () => { setCommandPaletteOpen(false); setSelectedProject(projects[1]); } },
+        { title: 'Zepra Tech Scoping & ROI Calculator', category: 'Tool', action: () => { setCommandPaletteOpen(false); document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' }); } },
+        { title: 'Open Printable CV / Resume View', category: 'Resume', action: () => { setCommandPaletteOpen(false); setShowResumeModal(true); } },
+        { title: 'Visit Zepra Tech Platform (gozepra.tech)', category: 'Links', action: () => { window.open('https://gozepra.tech', '_blank'); } },
+        { title: 'Open LinkedIn Profile', category: 'Links', action: () => { window.open('https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/', '_blank'); } },
+        { title: 'Copy Email Address (daudalilashari@gmail.com)', category: 'Contact', action: () => { copyToClipboard('daudalilashari@gmail.com'); setCommandPaletteOpen(false); } },
+        { title: 'Toggle Dark / Light Theme', category: 'Settings', action: () => { toggleDarkMode(); setCommandPaletteOpen(false); } }
+      ];
+
+      const filteredPaletteItems = paletteItems.filter(item => 
+        item.title.toLowerCase().includes(paletteSearch.toLowerCase()) ||
+        item.category.toLowerCase().includes(paletteSearch.toLowerCase())
+      );
+
+      return (
+        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'}`}>
+          
+          {/* Header */}
+          <header className={`sticky top-0 z-40 backdrop-blur-md border-b transition-colors ${darkMode ? 'bg-slate-950/85 border-slate-800/80' : 'bg-white/85 border-slate-200'}`}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+              
+              <a href="#hero" className="flex items-center gap-2.5 font-bold text-lg tracking-tight group">
+                <span className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center text-white font-mono shadow-md group-hover:scale-105 transition-transform">
+                  M
+                </span>
+                <span>
+                  M. Daud Ali <span className="text-cyan-500 font-normal hidden sm:inline">| Lashari</span>
+                </span>
+              </a>
+
+              {/* Desktop Nav */}
+              <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
+                <a href="#about" className="hover:text-cyan-400 transition-colors">About</a>
+                <a href="#honors" className="hover:text-cyan-400 transition-colors">Honors</a>
+                <a href="#experience" className="hover:text-cyan-400 transition-colors">Experience</a>
+                <a href="#projects" className="hover:text-cyan-400 transition-colors">Projects</a>
+                <a href="#calculator" className="hover:text-cyan-400 transition-colors flex items-center gap-1 text-cyan-400">
+                  <Icon name="calculator" className="w-3.5 h-3.5" />
+                  <span>Scoping ROI</span>
+                </a>
+                <a href="#skills" className="hover:text-cyan-400 transition-colors">Skills</a>
+                <a href="#contact" className="hover:text-cyan-400 transition-colors">Contact</a>
+              </nav>
+
+              {/* Action Group */}
+              <div className="flex items-center gap-2 sm:gap-3">
+                <button
+                  onClick={() => setCommandPaletteOpen(true)}
+                  className={`hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs border transition-colors ${darkMode ? 'border-slate-800 bg-slate-900/80 text-slate-400 hover:border-slate-700 hover:text-slate-200' : 'border-slate-200 bg-slate-100 text-slate-600 hover:text-slate-900'}`}
+                  title="Quick Command Search (Ctrl+K)"
+                >
+                  <Icon name="command" className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Search</span>
+                  <kbd className="px-1.5 py-0.5 text-[10px] rounded bg-slate-800 text-slate-300 font-mono">⌘K</kbd>
+                </button>
+
+                <button
+                  onClick={() => setShowResumeModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white transition-all shadow-sm hover:shadow-cyan-500/20"
+                >
+                  <Icon name="fileText" className="w-3.5 h-3.5" />
+                  <span className="hidden xs:inline">Executive CV</span>
+                  <span className="xs:hidden">CV</span>
+                </button>
+
+                <button
+                  onClick={toggleDarkMode}
+                  className={`p-2 rounded-lg border transition-colors ${darkMode ? 'border-slate-800 hover:bg-slate-900 text-amber-400' : 'border-slate-200 hover:bg-slate-100 text-slate-600'}`}
+                  aria-label="Toggle Theme"
+                >
+                  <Icon name={darkMode ? 'sun' : 'moon'} className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className={`lg:hidden p-2 rounded-lg border transition-colors ${darkMode ? 'border-slate-800 hover:bg-slate-900 text-slate-300' : 'border-slate-200 hover:bg-slate-100 text-slate-700'}`}
+                  aria-label="Toggle Mobile Menu"
+                >
+                  <Icon name={mobileMenuOpen ? 'x' : 'menu'} className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Nav Drawer */}
+            {mobileMenuOpen && (
+              <div className={`lg:hidden border-b px-4 py-4 space-y-3 ${darkMode ? 'bg-slate-950/95 border-slate-800' : 'bg-white/95 border-slate-200'}`}>
+                <div className="flex flex-col space-y-2 text-sm font-medium">
+                  <a href="#about" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-slate-800/40">About Daud</a>
+                  <a href="#honors" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-slate-800/40 text-amber-400 font-semibold flex items-center justify-between">
+                    <span>Honors & Pitches</span>
+                    <span className="text-xs px-2 py-0.5 rounded bg-amber-500/20">Top 5 FAST</span>
+                  </a>
+                  <a href="#experience" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-slate-800/40">Experience & Education</a>
+                  <a href="#projects" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-slate-800/40">Portfolio Projects</a>
+                  <a href="#calculator" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-slate-800/40 text-cyan-400 font-semibold flex items-center gap-2">
+                    <Icon name="calculator" className="w-4 h-4" />
+                    <span>Zepra Tech Scoping Calculator</span>
+                  </a>
+                  <a href="#skills" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-slate-800/40">Technical Matrix</a>
+                  <a href="#contact" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2 rounded-lg hover:bg-slate-800/40">Contact & Advisory</a>
+                </div>
+              </div>
+            )}
+          </header>
+
+          {/* Hero */}
+          <section id="hero" className="relative py-16 md:py-24 overflow-hidden border-b border-slate-800/40">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <div className="lg:col-span-7 space-y-6">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                    <Icon name="trophy" className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Top 5 Finalist @ 4th International AEIF AI Showdown 2026</span>
+                  </div>
+
+                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+                    Muhammad Daud <br className="hidden sm:inline" />
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-cyan-400 to-indigo-400">
+                      Ali Lashari
+                    </span>
+                  </h1>
+
+                  <p className={`text-base sm:text-lg leading-relaxed ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                    Tech Entrepreneur & Full-Stack Architect. Founder & CEO at <strong>Zepra Tech</strong>, architecting high-performance cloud platforms, dynamic project scoping calculators, and GEO/AEO digital growth engines. Computer Science Undergraduate at Lahore Garrison University.
+                  </p>
+
+                  <div className="flex flex-wrap gap-2.5 text-xs font-medium">
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${darkMode ? 'bg-slate-900/90 border-slate-800 text-slate-300' : 'bg-white border-slate-200 text-slate-700 shadow-sm'}`}>
+                      <Icon name="mapPin" className="w-3.5 h-3.5 text-blue-400" />
+                      <span>Lahore, PK & Andover, MA</span>
+                    </div>
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${darkMode ? 'bg-slate-900/90 border-slate-800 text-slate-300' : 'bg-white border-slate-200 text-slate-700 shadow-sm'}`}>
+                      <Icon name="graduationCap" className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>FA25-BSCS-233 (LGU)</span>
+                    </div>
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${darkMode ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span>Available for Advisory & Contracts</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-2">
+                    <a
+                      href="#honors"
+                      className="px-6 py-3 rounded-lg font-semibold text-sm bg-gradient-to-r from-amber-500 via-blue-600 to-cyan-500 hover:from-amber-400 hover:to-cyan-400 text-white shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
+                    >
+                      <Icon name="trophy" className="w-4 h-4" />
+                      <span>View Honors & Pitches</span>
+                    </a>
+
+                    <a
+                      href="#calculator"
+                      className={`px-5 py-3 rounded-lg font-semibold text-sm border flex items-center gap-2 transition-colors ${darkMode ? 'border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20' : 'border-cyan-400 bg-cyan-50 text-cyan-800 hover:bg-cyan-100'}`}
+                    >
+                      <Icon name="calculator" className="w-4 h-4 text-cyan-400" />
+                      <span>Scoping Calculator</span>
+                    </a>
+
+                    <a
+                      href="#contact"
+                      className={`px-5 py-3 rounded-lg font-semibold text-sm border transition-colors ${darkMode ? 'border-slate-800 hover:bg-slate-900 text-slate-200' : 'border-slate-300 hover:bg-slate-100 text-slate-800'}`}
+                    >
+                      Get In Touch
+                    </a>
+                  </div>
+                </div>
+
+                {/* Profile Card */}
+                <div className="lg:col-span-5 flex justify-center">
+                  <div className="relative group w-full max-w-sm">
+                    <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-amber-500 via-blue-600 to-cyan-400 blur-md opacity-40 group-hover:opacity-75 transition duration-500"></div>
+                    
+                    <div className={`relative rounded-2xl p-4 border overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-xl'}`}>
+                      <div className="aspect-[4/5] rounded-xl overflow-hidden bg-slate-800 mb-4 relative">
+                        <img
+                          src={profileImg}
+                          alt="Muhammad Daud Ali Lashari"
+                          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl backdrop-blur-md bg-slate-950/85 border border-slate-700/50 text-white text-xs space-y-1">
+                          <p className="font-semibold text-slate-100 flex items-center justify-between">
+                            <span>Muhammad Daud Ali Lashari</span>
+                            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                          </p>
+                          <p className="text-amber-400 text-[11px] font-medium flex items-center gap-1.5">
+                            <Icon name="trophy" className="w-3.5 h-3.5 flex-shrink-0" />
+                            <span>Top 5 Pitcher @ AEIF AI Showdown '26</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2.5 text-xs pt-1">
+                        <div className="flex justify-between items-center text-slate-400">
+                          <span>Leadership</span>
+                          <span className="text-cyan-400 font-semibold">Founder & CEO @ Zepra Tech</span>
+                        </div>
+                        <div className="flex justify-between items-center text-slate-400">
+                          <span>Education</span>
+                          <span className="text-slate-200 font-medium">BSCS @ LGU (FA25-BSCS-233)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          {/* KPI Bar */}
+          <section className={`py-8 border-b ${darkMode ? 'bg-slate-900/50 border-slate-800/80' : 'bg-slate-100/80 border-slate-200'}`}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                <div className="space-y-1">
+                  <div className="text-2xl sm:text-3xl font-extrabold text-amber-400 flex items-center justify-center gap-1">
+                    <Icon name="trophy" className="w-6 h-6 inline-block text-amber-400" />
+                    <span>Top 5</span>
+                  </div>
+                  <p className="text-xs text-slate-400 font-medium">Global AI Pitch (AEIF @ FAST)</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-2xl sm:text-3xl font-extrabold text-cyan-400">+45%</div>
+                  <p className="text-xs text-slate-400 font-medium">Conversion Lift via Zepra Tech</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-2xl sm:text-3xl font-extrabold text-blue-400">3.2x</div>
+                  <p className="text-xs text-slate-400 font-medium">Target Campaign ROI (GEO/AEO)</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-2xl sm:text-3xl font-extrabold text-emerald-400 flex items-center justify-center gap-1">
+                    <Icon name="shieldCheck" className="w-6 h-6 inline-block text-emerald-400" />
+                    <span>100</span>
+                  </div>
+                  <p className="text-xs text-slate-400 font-medium">Lighthouse Web Performance</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Interactive ROI Calculator */}
+          <section id="calculator" className={`py-16 border-b ${darkMode ? 'border-slate-800 bg-slate-900/50' : 'border-slate-200 bg-cyan-50/40'}`}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+              <div className="max-w-3xl mb-10">
+                <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-cyan-400 mb-2">
+                  <Icon name="calculator" className="w-4 h-4" />
+                  <span>Interactive Client Tool</span>
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-bold">Zepra Tech Scoping & ROI Estimator</h3>
+                <p className={`text-sm mt-2 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  Simulate your enterprise project parameters, expected delivery timeline, and forecasted growth lift in real-time.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div className={`lg:col-span-7 p-6 sm:p-8 rounded-2xl border space-y-6 ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                      1. Select System Architecture
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { id: 'web', label: 'Enterprise Web', iconName: 'code' },
+                        { id: 'ai', label: 'AI Intelligence', iconName: 'brain' },
+                        { id: 'geo', label: 'GEO/AEO Growth', iconName: 'barChart' },
+                        { id: 'saas', label: 'Custom SaaS', iconName: 'layers' }
+                      ].map((type) => (
+                        <button
+                          key={type.id}
+                          type="button"
+                          onClick={() => setCalcProjectType(type.id)}
+                          className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between ${calcProjectType === type.id ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 font-bold ring-1 ring-cyan-500' : darkMode ? 'border-slate-800 bg-slate-950 text-slate-300' : 'border-slate-200 bg-slate-50 text-slate-700'}`}
+                        >
+                          <Icon name={type.iconName} className="w-4 h-4 mb-2 text-cyan-400" />
+                          <span className="text-xs">{type.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                      2. Deployment Scale & Scope
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { id: 'mvp', label: 'Sprint MVP', desc: 'Fast prototype' },
+                        { id: 'standard', label: 'Standard Production', desc: 'Core ready' },
+                        { id: 'enterprise', label: 'Global Enterprise', desc: 'High scale' }
+                      ].map((scale) => (
+                        <button
+                          key={scale.id}
+                          type="button"
+                          onClick={() => setCalcScale(scale.id)}
+                          className={`p-3 rounded-xl border text-left transition-all ${calcScale === scale.id ? 'border-blue-500 bg-blue-500/10 text-blue-400 font-bold ring-1 ring-blue-500' : darkMode ? 'border-slate-800 bg-slate-950 text-slate-300' : 'border-slate-200 bg-slate-50 text-slate-700'}`}
+                        >
+                          <div className="text-xs">{scale.label}</div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">{scale.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                      3. Key Modular Add-Ons
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                      {[
+                        { key: 'scopingEngine', label: 'Interactive Scoping Engine' },
+                        { key: 'authSecurity', label: 'Role-Based Auth & Security' },
+                        { key: 'aiOrchestration', label: 'Generative AI / LLM Integration' },
+                        { key: 'analyticsGIS', label: 'Real-Time GIS / Spatial Analytics' },
+                        { key: 'multiRegion', label: 'Dual-Region Infrastructure (PK/US)' }
+                      ].map((addon) => (
+                        <label
+                          key={addon.key}
+                          className={`flex items-center gap-2.5 p-2.5 rounded-lg border cursor-pointer select-none transition-colors ${calcAddons[addon.key] ? 'border-cyan-500/50 bg-cyan-500/5 text-cyan-300' : darkMode ? 'border-slate-800 bg-slate-950 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600'}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={calcAddons[addon.key]}
+                            onChange={(e) => setCalcAddons({ ...calcAddons, [addon.key]: e.target.checked })}
+                            className="rounded border-slate-700 text-cyan-500 focus:ring-cyan-400"
+                          />
+                          <span>{addon.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className={`lg:col-span-5 p-6 sm:p-8 rounded-2xl border space-y-6 ${darkMode ? 'bg-gradient-to-br from-slate-900 to-slate-950 border-cyan-500/30' : 'bg-white border-cyan-200 shadow-md'}`}>
+                  <div className="flex items-center justify-between border-b pb-4 border-slate-800">
+                    <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">Calculated Forecast</span>
+                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">{calculatedEstimates.tier}</span>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
+                      <div className="text-xs text-slate-400 flex items-center gap-1.5">
+                        <Icon name="clock" className="w-3.5 h-3.5 text-blue-400" />
+                        <span>Estimated Delivery Timeline</span>
+                      </div>
+                      <div className="text-xl font-bold text-white font-mono">{calculatedEstimates.weeks}</div>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
+                      <div className="text-xs text-slate-400 flex items-center gap-1.5">
+                        <Icon name="barChart" className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Projected Conversion Lift</span>
+                      </div>
+                      <div className="text-xl font-bold text-cyan-400 font-mono">{calculatedEstimates.lift}</div>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
+                      <div className="text-xs text-slate-400 flex items-center gap-1.5">
+                        <Icon name="rocket" className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Target ROI Multiplier</span>
+                      </div>
+                      <div className="text-xl font-bold text-amber-400 font-mono">{calculatedEstimates.roi}</div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={transferCalculatorToContact}
+                    className="w-full py-3 px-4 rounded-xl font-bold text-xs bg-gradient-to-r from-blue-600 via-cyan-500 to-indigo-600 hover:from-blue-500 hover:to-cyan-400 text-white shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>Transfer Scope to Contact Form</span>
+                    <Icon name="arrowRight" className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Projects Section */}
+          <section id="projects" className={`py-16 border-b ${darkMode ? 'border-slate-900 bg-slate-950/50' : 'border-slate-200 bg-slate-100/50'}`}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+              <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
+                <div>
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-500 mb-2">Portfolio Showcase</h2>
+                  <h3 className="text-2xl sm:text-3xl font-bold">Featured Works & Initiatives</h3>
+                </div>
+
+                <div className="relative w-full md:w-72">
+                  <Icon name="search" className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search projects or tech..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={`w-full pl-9 pr-4 py-2 rounded-xl text-xs border outline-none transition-colors ${darkMode ? 'bg-slate-900 border-slate-800 focus:border-cyan-500 text-slate-200' : 'bg-white border-slate-300 focus:border-cyan-500 text-slate-900'}`}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {filteredProjects.map((p) => (
+                  <div
+                    key={p.id}
+                    className={`group rounded-xl border p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 ${darkMode ? 'bg-slate-900/80 border-slate-800 hover:border-cyan-500/40' : 'bg-white border-slate-200 shadow-sm'}`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className={`text-xs font-semibold px-2.5 py-1 rounded border ${p.id === 'aeif-showdown-2026' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 font-bold' : 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'}`}>
+                          {p.badge}
+                        </span>
+                        <span className="text-xs text-slate-500 font-mono">{p.categoryLabel}</span>
+                      </div>
+
+                      <h4 className="text-xl font-bold mb-2 group-hover:text-cyan-400 transition-colors">{p.title}</h4>
+                      <p className={`text-xs leading-relaxed mb-4 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{p.description}</p>
+
+                      <div className="flex flex-wrap gap-1.5 mb-6">
+                        {p.techStack.map((tech, i) => (
+                          <span key={i} className={`text-[11px] px-2 py-0.5 rounded ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'}`}>
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-800/60">
+                      <button
+                        onClick={() => setSelectedProject(p)}
+                        className="text-xs font-medium text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+                      >
+                        <span>View Case Details</span>
+                        <Icon name="chevronRight" className="w-3.5 h-3.5" />
+                      </button>
+
+                      <a href={p.link} target="_blank" rel="noreferrer" className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1">
+                        <span>Live Platform</span>
+                        <Icon name="externalLink" className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Contact Section */}
+          <section id="contact" className={`py-16 ${darkMode ? 'bg-slate-950' : 'bg-white'}`}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                <div className="lg:col-span-5 space-y-6">
+                  <div>
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-500 mb-2">Direct Contact</h2>
+                    <h3 className="text-2xl sm:text-3xl font-bold mb-4">Let's Connect & Collaborate</h3>
+                    <p className={`text-sm leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                      Available for high-impact full-stack Next.js applications, AI architecture, and growth optimization advisory.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4 text-sm">
+                    <div className={`p-4 rounded-xl border flex items-center justify-between ${darkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                          <Icon name="mail" className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="text-xs text-slate-500">Email Address</div>
+                          <a href="mailto:daudalilashari@gmail.com" className="font-medium hover:text-cyan-400 text-xs sm:text-sm">daudalilashari@gmail.com</a>
+                        </div>
+                      </div>
+                      <button onClick={() => copyToClipboard('daudalilashari@gmail.com')} className="p-2 text-slate-400 hover:text-cyan-400">
+                        <Icon name={copiedEmail ? 'check' : 'copy'} className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className={`p-4 rounded-xl border flex items-center justify-between ${darkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                          <Icon name="globe" className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="text-xs text-slate-500">Company Platform</div>
+                          <a href="https://gozepra.tech" target="_blank" rel="noreferrer" className="font-medium hover:text-cyan-400 text-xs sm:text-sm">gozepra.tech</a>
+                        </div>
+                      </div>
+                      <a href="https://gozepra.tech" target="_blank" rel="noreferrer" className="p-2 text-slate-400 hover:text-cyan-400">
+                        <Icon name="externalLink" className="w-4 h-4" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="lg:col-span-7">
+                  <div className={`p-6 sm:p-8 rounded-2xl border ${darkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
+                    <h4 className="text-lg font-bold mb-4">Send a Direct Inquiry</h4>
+                    {formStatus === 'success' ? (
+                      <div className="p-6 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-center space-y-2">
+                        <Icon name="checkCircle" className="w-8 h-8 mx-auto text-emerald-400" />
+                        <h5 className="font-bold text-base">Message Transmitted!</h5>
+                        <p className="text-xs text-emerald-300">Thank you for getting in touch. Daud will respond promptly.</p>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleContactSubmit} className="space-y-4 text-xs">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block mb-1.5 font-medium text-slate-400">Your Name</label>
+                            <input type="text" required value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Full Name" className={`w-full px-3 py-2.5 rounded-lg border outline-none ${darkMode ? 'bg-slate-950 border-slate-800 text-slate-100' : 'bg-white border-slate-300 text-slate-900'}`} />
+                          </div>
+                          <div>
+                            <label className="block mb-1.5 font-medium text-slate-400">Email Address</label>
+                            <input type="email" required value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="email@domain.com" className={`w-full px-3 py-2.5 rounded-lg border outline-none ${darkMode ? 'bg-slate-950 border-slate-800 text-slate-100' : 'bg-white border-slate-300 text-slate-900'}`} />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block mb-1.5 font-medium text-slate-400">Subject</label>
+                          <input type="text" required value={contactSubject} onChange={(e) => setContactSubject(e.target.value)} placeholder="Subject" className={`w-full px-3 py-2.5 rounded-lg border outline-none ${darkMode ? 'bg-slate-950 border-slate-800 text-slate-100' : 'bg-white border-slate-300 text-slate-900'}`} />
+                        </div>
+                        <div>
+                          <label className="block mb-1.5 font-medium text-slate-400">Message</label>
+                          <textarea rows="4" required value={contactMessage} onChange={(e) => setContactMessage(e.target.value)} placeholder="Message..." className={`w-full px-3 py-2.5 rounded-lg border outline-none ${darkMode ? 'bg-slate-950 border-slate-800 text-slate-100' : 'bg-white border-slate-300 text-slate-900'}`}></textarea>
+                        </div>
+                        <button type="submit" className="w-full py-3 rounded-lg font-bold text-xs bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white shadow-md flex items-center justify-center gap-2">
+                          <Icon name="send" className="w-3.5 h-3.5" />
+                          <span>Transmit Direct Message</span>
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Footer */}
+          <footer className={`py-8 border-t text-xs ${darkMode ? 'border-slate-900 bg-slate-950 text-slate-500' : 'border-slate-200 bg-slate-100 text-slate-600'}`}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>© {new Date().getFullYear()} Muhammad Daud Ali Lashari. CEO & Founder at Zepra Tech.</div>
+              <div className="flex items-center gap-4">
+                <a href="https://gozepra.tech" target="_blank" rel="noreferrer" className="hover:text-cyan-400">gozepra.tech</a>
+                <span>•</span>
+                <a href="https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/" target="_blank" rel="noreferrer" className="hover:text-cyan-400">LinkedIn Profile</a>
+                <span>•</span>
+                <a href="#hero" className="hover:text-cyan-400">Back to top ↑</a>
+              </div>
+            </div>
+          </footer>
+
+          {/* CV Modal */}
+          {showResumeModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+              <div className={`relative w-full max-w-3xl my-8 rounded-2xl p-6 sm:p-8 border shadow-2xl print-page ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'}`}>
+                <div className="flex items-center justify-between border-b pb-4 mb-6 border-slate-800 no-print">
+                  <div className="flex items-center gap-2">
+                    <Icon name="fileText" className="w-5 h-5 text-cyan-400" />
+                    <h4 className="font-bold text-base">Executive Curriculum Vitae</h4>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => window.print()} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-950">
+                      <Icon name="printer" className="w-3.5 h-3.5" />
+                      <span>Print / PDF</span>
+                    </button>
+                    <button onClick={() => setShowResumeModal(false)} className="p-1.5 rounded-lg text-slate-400 hover:text-white">
+                      <Icon name="x" className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-xs text-slate-300">
+                  <div className="border-b border-slate-800 pb-3">
+                    <h2 className="text-xl font-bold text-white">MUHAMMAD DAUD ALI LASHARI</h2>
+                    <p className="text-cyan-400 font-semibold">Founder & CEO @ Zepra Tech • Top 5 Finalist @ 4th AEIF AI Showdown 2026</p>
+                    <p className="text-slate-400 mt-1">DHA Phase 8, Lahore & Andover, MA | daudalilashari@gmail.com | gozepra.tech</p>
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-sm text-cyan-400 mb-1">Executive Summary</h5>
+                    <p className="leading-relaxed">Full-stack systems architect and entrepreneur with proven execution across modern web platforms, real-time scoping calculators, and GEO/AEO search optimization.</p>
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-sm text-amber-400 mb-1">Featured Recognitions</h5>
+                    <ul className="list-disc list-inside space-y-1">
+                      <li><strong>Top 5 Global Finalist:</strong> 4th International AEIF AI Showdown 2026 at FAST-NUCES Lahore.</li>
+                      <li><strong>Civic Innovation Hackathon 2026:</strong> Architected Lahore Pulse AI urban mobility & AQI engine.</li>
+                      <li><strong>FAST-NUCES SOFTEC 2026:</strong> Web Development Team Lead for Zepra Tech.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Command Palette */}
+          {commandPaletteOpen && (
+            <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-slate-950/80 backdrop-blur-md" onClick={() => setCommandPaletteOpen(false)}>
+              <div className={`relative w-full max-w-xl rounded-2xl border shadow-2xl overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'}`} onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center px-4 py-3 border-b border-slate-800">
+                  <Icon name="search" className="w-4 h-4 text-cyan-400 mr-3" />
+                  <input type="text" autoFocus placeholder="Type a command or jump to section..." value={paletteSearch} onChange={(e) => setPaletteSearch(e.target.value)} className="w-full bg-transparent outline-none text-sm" />
+                </div>
+                <div className="max-h-72 overflow-y-auto p-2 space-y-1 text-xs">
+                  {filteredPaletteItems.map((item, idx) => (
+                    <button key={idx} onClick={item.action} className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between ${darkMode ? 'hover:bg-slate-800 text-slate-200' : 'hover:bg-slate-100 text-slate-800'}`}>
+                      <span>{item.title}</span>
+                      <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">{item.category}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<PortfolioApp />);
+  </script>
+</body>
+</html>
