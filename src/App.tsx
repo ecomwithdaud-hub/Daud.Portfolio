@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Briefcase, 
   GraduationCap, 
@@ -13,6 +13,7 @@ import {
   ExternalLink, 
   Award, 
   ChevronRight, 
+  ChevronLeft,
   Sparkles, 
   X, 
   Send, 
@@ -41,11 +42,14 @@ import {
   Eye, 
   Share2, 
   Terminal, 
-  Compass, 
   Zap, 
-  Maximize2 
+  Maximize2,
+  Play,
+  Pause,
+  RotateCcw
 } from 'lucide-react';
 
+// Custom Type-Safe Inline Brand SVGs (matches 24x24 stroke aesthetic)
 const Linkedin = ({ className = "w-4 h-4" }: { className?: string }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
@@ -63,1282 +67,929 @@ const Linkedin = ({ className = "w-4 h-4" }: { className?: string }) => (
   </svg>
 );
 
+const WhatsAppIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+  </svg>
+);
+
 export default function App() {
   const [darkMode, setDarkMode] = useState(true);
-  const [activeTab, setActiveTab] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedProject, setSelectedProject] = useState<any>(null);
-  const [formStatus, setFormStatus] = useState<string | null>(null);
-  const [showCvModal, setShowCvModal] = useState(false);
+  const [stringPulling, setStringPulling] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
-  const [paletteSearch, setPaletteSearch] = useState('');
-  const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
-  const [cvViewMode, setCvViewMode] = useState<'preview' | 'text'>('preview');
-
-  // ROI / Scoping Calculator State
-  const [calcProjectType, setCalcProjectType] = useState<'web' | 'ai' | 'geo' | 'saas'>('web');
-  const [calcScale, setCalcScale] = useState<'mvp' | 'standard' | 'enterprise'>('standard');
-  const [calcAddons, setCalcAddons] = useState<{ [key: string]: boolean }>({
-    scopingEngine: true,
-    authSecurity: true,
-    aiOrchestration: true,
-    analyticsGIS: false,
-    multiRegion: true,
-  });
-
-  // Contact form state
-  const [contactSubject, setContactSubject] = useState('');
-  const [contactMessage, setContactMessage] = useState('');
-  const [contactName, setContactName] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-
-  // Synchronize Dark Mode Class on document body
+  const [dossierModalOpen, setDossierModalOpen] = useState(false);
+  const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [estimatorOpen, setEstimatorOpen] = useState(false);
+  
+  // Real-time Pakistan Clock (UTC+5)
+  const [pktTime, setPktTime] = useState('');
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
+    const updateTime = () => {
+      const now = new Date();
+      // Format to Pakistan Standard Time (UTC+5)
+      const options: Intl.DateTimeFormatOptions = {
+        timeZone: 'Asia/Karachi',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      };
+      setPktTime(new Intl.DateTimeFormat('en-US', options).format(now));
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-  // Global Keyboard Shortcut: Ctrl+K or Cmd+K for Command Palette
+  // Keyboard shortcut Ctrl+K / Cmd+K
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setCommandPaletteOpen((prev) => !prev);
+        setCommandPaletteOpen(prev => !prev);
       }
       if (e.key === 'Escape') {
         setCommandPaletteOpen(false);
-        setSelectedProject(null);
-        setShowCvModal(false);
-        setMobileMenuOpen(false);
+        setDossierModalOpen(false);
+        setContactModalOpen(false);
+        setEstimatorOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const toggleDarkMode = () => setDarkMode(!darkMode);
+  // Rotating Typewriter Headings in Hero (Reel Flex)
+  const roles = useMemo(() => [
+    'Founder & CEO @ Zepra Tech',
+    'AEIF Top 5 AI Finalist',
+    'Full-Stack Systems Architect',
+    'Autonomous Agent Engineer',
+    'Enterprise Solutions Lead'
+  ], []);
+  const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
+  const [displayedText, setDisplayedText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const copyToClipboard = (text: string, identifier: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedEmail(identifier);
-    setTimeout(() => setCopiedEmail(null), 2500);
+  useEffect(() => {
+    const currentRole = roles[currentRoleIndex];
+    let timeout: NodeJS.Timeout;
+
+    if (!isDeleting && displayedText !== currentRole) {
+      timeout = setTimeout(() => {
+        setDisplayedText(currentRole.slice(0, displayedText.length + 1));
+      }, 70);
+    } else if (!isDeleting && displayedText === currentRole) {
+      timeout = setTimeout(() => {
+        setIsDeleting(true);
+      }, 2000);
+    } else if (isDeleting && displayedText !== '') {
+      timeout = setTimeout(() => {
+        setDisplayedText(currentRole.slice(0, displayedText.length - 1));
+      }, 40);
+    } else if (isDeleting && displayedText === '') {
+      setIsDeleting(false);
+      setCurrentRoleIndex((prev) => (prev + 1) % roles.length);
+    }
+
+    return () => clearTimeout(timeout);
+  }, [displayedText, isDeleting, currentRoleIndex, roles]);
+
+  // Pull string light switch handler
+  const handlePullString = () => {
+    setStringPulling(true);
+    setTimeout(() => {
+      setDarkMode(prev => !prev);
+      setStringPulling(false);
+    }, 280);
   };
 
-  // Profile Image and Assets
-  const profileImg = "./profile.png";
-  const cvPdfPath = "./Muhammad_Daud_Ali_Lashari_CV.pdf";
-  const cvPreviewImg = "./cv_full_preview.png";
-
-  // Data Objects - Exactly synchronized with LinkedIn and Executive Dossier
-  const projects = [
+  // Flagship Doors Data ("Magic happens behind the doors")
+  const doors = [
+    {
+      id: 'sabz-ai',
+      doorNumber: '01',
+      title: 'SABZ AI Traffic System',
+      category: 'Computer Vision & Real-time AI',
+      badge: '5th Worldwide @ 4th AEIF AI Showdown',
+      doorColor: 'from-blue-900 via-indigo-950 to-slate-950',
+      plaqueColor: 'border-amber-400/80 bg-gradient-to-r from-amber-600/30 to-amber-500/20 text-amber-200',
+      lightColor: 'rgba(245, 158, 11, 0.35)',
+      description: 'Intelligent real-time traffic signal optimization and emergency vehicle corridor routing utilizing custom YOLOv8 inference telemetry.',
+      metrics: [
+        { label: 'Global Standing', value: 'Top 5 Worldwide' },
+        { label: 'Latency', value: '< 42ms Edge' },
+        { label: 'Congestion Drop', value: '-34% Idle Delay' },
+        { label: 'Telemetry', value: 'Multi-Camera Stream' }
+      ],
+      highlights: [
+        'Recognized 5th internationally at the 4th International AEIF AI Showdown 2026',
+        'Real-time vehicle detection and density estimation across multi-lane junctions',
+        'Automatic green-wave priority clearing for emergency responders and ambulances',
+        'Fully simulated micro-traffic edge controllers ready for city-scale rollout'
+      ],
+      techStack: ['Python', 'YOLOv8', 'OpenCV', 'FastAPI', 'PyTorch', 'Next.js 15', 'Docker'],
+      demoType: 'traffic'
+    },
     {
       id: 'linkedin-resume-engine',
-      title: 'LinkedIn Autonomous Resume & Executive Dossier Engine',
-      category: 'ai',
-      categoryLabel: 'AI Automation & Document Systems',
-      badge: '🚀 Flagship Automation Engine',
-      description: 'Automated data ingestion and vector document pipeline that parses live LinkedIn profile data and compiles multi-page, high-DPI executive PDF dossiers and interactive web resumes.',
-      longDescription: 'Engineered directly in Antigravity to solve automated executive profiling. The engine parses complex structured LinkedIn data, evaluates role hierarchies, cleanses descriptions, generates high-density typographical templates, and utilizes headless rendering to produce print-perfect vector PDFs along with interactive web representations.',
-      techStack: ['Node.js', 'Puppeteer Engine', 'LinkedIn Graph Parsing', 'HTML5 Canvas / PDF', 'Tailwind CSS', 'TypeScript'],
-      metrics: ['2.2 MB High-DPI Output', '100% Verbatim Career Ingestion', 'Zero Layout Shift Vector Rendering'],
-      link: cvPdfPath,
-      actionText: 'Download Generated PDF'
+      doorNumber: '02',
+      title: 'LinkedIn Autonomous Resume Engine',
+      category: 'Autonomous Document & Vector Pipeline',
+      badge: 'Data Extraction & Vector Generation',
+      doorColor: 'from-cyan-950 via-slate-900 to-slate-950',
+      plaqueColor: 'border-cyan-400/80 bg-gradient-to-r from-cyan-600/30 to-blue-500/20 text-cyan-200',
+      lightColor: 'rgba(6, 182, 212, 0.35)',
+      description: 'Automated data ingestion and vector document compiler that transforms structured LinkedIn profiles into high-DPI executive PDF dossiers and interactive web portfolios.',
+      metrics: [
+        { label: 'Dossier Output', value: '2.2 MB High-DPI' },
+        { label: 'Parsing Fidelity', value: '100% LinkedIn Data' },
+        { label: 'Render Engine', value: 'Headless Chromium' },
+        { label: 'Sync Status', value: 'Verified Record' }
+      ],
+      highlights: [
+        'Directly synthesized the verified 2.2MB executive curriculum vitae for Daud',
+        'Intelligent schema normalization parsing work history, achievements, and technical stacks',
+        'Precision typography grid producing print-ready vector PDF documents and instant web previews',
+        'End-to-end automated pipeline built directly in Antigravity'
+      ],
+      techStack: ['Node.js', 'Puppeteer', 'TypeScript', 'LinkedIn Graph Data', 'Tailwind CSS', 'Vite'],
+      demoType: 'resume'
     },
     {
-      id: 'sabz-ai-traffic',
-      title: 'SABZ AI — Adaptive Smart Traffic Control System',
-      category: 'ai',
-      categoryLabel: 'AI & Global Innovation',
-      badge: '🏆 5th Position Worldwide (Out of 400+ Teams)',
-      description: 'Pitched an innovative computer vision & queue-length detection traffic system, winning 5th worldwide at the 4th International AEIF Foundation AI Showdown 2026 at FAST-NUCES Lahore.',
-      longDescription: 'Competed against 400+ national and international teams before an esteemed global jury featuring delegates from MIT (Dr. Fan), Silicon Valley (Dr. Steven), LUMS (Dr. Saffiullah Chaudhry), and UBAAS faculty. SABZ AI dynamically modulates signal phases based on real-time intersection vehicle congestion, drastically diminishing fuel wastage and urban idling emissions.',
-      techStack: ['Python', 'OpenCV', 'YOLOv8', 'FastAPI', 'Traffic Flow Simulation', 'Executive Pitching'],
-      metrics: ['5th Position Worldwide / Nationwide', '400+ Participating Teams', 'Evaluated by MIT & Silicon Valley Jurors'],
-      link: 'https://gozepra.tech',
-      actionText: 'View Platform Details'
+      id: 'zepra-tech',
+      doorNumber: '03',
+      title: 'Zepra Tech Enterprise Platform',
+      category: 'Enterprise SaaS & Cloud Infrastructure',
+      badge: 'Production Software Ecosystem',
+      doorColor: 'from-emerald-950 via-slate-900 to-slate-950',
+      plaqueColor: 'border-emerald-400/80 bg-gradient-to-r from-emerald-600/30 to-teal-500/20 text-emerald-200',
+      lightColor: 'rgba(16, 185, 129, 0.35)',
+      description: 'The digital flagship platform for Zepra Tech, engineering high-throughput web applications, client solutions, and scalable software ecosystems.',
+      metrics: [
+        { label: 'Role', value: 'Founder & CEO' },
+        { label: 'Uptime SLA', value: '99.98%' },
+        { label: 'Edge Latency', value: '< 90ms Global' },
+        { label: 'Live Domain', value: 'gozepra.tech' }
+      ],
+      highlights: [
+        'Founded and led technology vision, client architecture, and development operations',
+        'Delivering modular, scalable full-stack applications with React, Next.js, and TypeScript',
+        'End-to-end product delivery from technical specification to production cloud infrastructure',
+        'Serving international business requirements with enterprise security and speed'
+      ],
+      techStack: ['React', 'Next.js 15', 'TypeScript', 'Tailwind CSS', 'PostgreSQL', 'Vercel / Cloud'],
+      demoType: 'zepra'
     },
     {
-      id: 'lahore-pulse',
-      title: 'Lahore Pulse AI — Urban Intelligence Dashboard',
-      category: 'ai',
-      categoryLabel: 'AI & Civic Technology',
-      badge: 'Civic Innovation Hackathon 2026 @ LGU',
-      description: 'AI-driven city intelligence platform delivering real-time air quality indexing (AQI), urban traffic forecasting, and automated citizen issue reporting in Lahore.',
-      longDescription: 'Developed for the Civic Innovation Hackathon 2026 at Lahore Garrison University (LGU). Integrates real-time GIS spatial maps, AI sentiment analysis for civic feedback, and lightweight time-series forecasting for regional AQI and smog levels.',
-      techStack: ['Next.js 15', 'React', 'Tailwind CSS', 'TypeScript', 'AI Analytics', 'Leaflet GIS'],
-      metrics: ['LGU Civic Innovation Showcase', 'Real-Time AQI & Mobility Engine', 'Sub-second Response Times'],
-      link: 'https://gozepra.tech',
-      actionText: 'Explore Project'
-    },
-    {
-      id: 'zepra-tech-suite',
-      title: 'Zepra Tech Enterprise Cloud Suite & Scoping Engine',
-      category: 'web',
-      categoryLabel: 'Enterprise Cloud Systems',
-      badge: 'Flagship Core Product',
-      description: 'Full-stack client onboarding platform featuring real-time project scoping calculators, dynamic ROI forecasting engines, and seamless cloud services.',
-      longDescription: 'Architected and deployed as CEO of Zepra Tech. Serves dual-region enterprise clients (Lahore, PK & Andover, MA). Built on Next.js 15 with custom server actions for instantaneous cost estimation and lead pipeline management.',
-      techStack: ['Next.js 15', 'React', 'TypeScript', 'Tailwind CSS', 'Node.js', 'PostgreSQL'],
-      metrics: ['45% Conversion Lift', 'Dual-Region Infrastructure (PK & US)', 'Integrated Scoping Engine'],
-      link: 'https://gozepra.tech',
-      actionText: 'Visit Live Site'
-    },
-    {
-      id: 'softec-26-entry',
-      title: 'SOFTEC 26 Web Innovation Platform',
-      category: 'web',
-      categoryLabel: 'Full-Stack Web Dev',
-      badge: 'FAST-NUCES SOFTEC 2026',
-      description: 'High-performance web architecture engineered for the SOFTEC 2026 Web Development Competition at FAST-NUCES Lahore by Team Zepra Tech.',
-      longDescription: 'Built under competitive speed constraints during SOFTEC 2026. Features modular state design, full accessibility compliance, and optimized web vitals for instantaneous state synchronization across distributed client nodes.',
-      techStack: ['React', 'Tailwind CSS', 'Framer Motion', 'REST API', 'Vite'],
-      metrics: ['FAST-NUCES SOFTEC Lead', '100 Lighthouse Performance', 'Zero Layout Shift'],
-      link: 'https://gozepra.tech',
-      actionText: 'Inspect Architecture'
-    },
-    {
-      id: 'real-estate-engine',
-      title: 'Real Estate Multi-Channel Growth Engine (GEO & AEO)',
-      category: 'marketing',
-      categoryLabel: 'Digital Marketing & Growth',
-      badge: 'Enterprise Performance Marketing',
-      description: 'GEO/AEO search positioning and multi-channel paid ad growth engines for premier real estate ventures across DHA Lahore, Mangla Greens & Al Ghani Garden.',
-      longDescription: 'End-to-end performance marketing framework integrating Generative Engine Optimization (GEO) and Answer Engine Optimization (AEO) to dominate AI-driven search engine results (Perplexity, ChatGPT, Google SGE) alongside targeted Meta and Google Ads.',
-      techStack: ['GEO / AEO Optimization', 'Meta Ads Manager', 'Google Ads', 'TikTok Ads', 'Conversion Funnels'],
-      metrics: ['3.2x Campaign ROI', 'Top AI Search Indexing', 'High-Ticket Sales Conversions'],
-      link: 'https://gozepra.tech',
-      actionText: 'View Case Study'
+      id: 'agentic-ai',
+      doorNumber: '04',
+      title: 'Autonomous Multi-Agent Swarms',
+      category: 'Agentic AI & LLM Task Orchestration',
+      badge: 'Autonomous Workflow Engine',
+      doorColor: 'from-purple-950 via-slate-900 to-slate-950',
+      plaqueColor: 'border-purple-400/80 bg-gradient-to-r from-purple-600/30 to-fuchsia-500/20 text-purple-200',
+      lightColor: 'rgba(168, 85, 247, 0.35)',
+      description: 'Distributed autonomous agent networks orchestrating multi-step research, code generation, self-correcting unit tests, and real-time task automation.',
+      metrics: [
+        { label: 'Architecture', value: 'DAG Execution' },
+        { label: 'Coordination', value: 'Subagent Swarm' },
+        { label: 'Memory', value: 'Persistent Vector' },
+        { label: 'Error Rate', value: '< 0.5% Loop Fallback' }
+      ],
+      highlights: [
+        'Decomposes high-level objectives into specialized subagents running concurrently',
+        'Automated file manipulation, test execution, and deployment verification',
+        'Context-aware memory indexing to handle long-running background tasks without hallucination',
+        'Integrated with modern agentic APIs and structured tool execution'
+      ],
+      techStack: ['Python', 'TypeScript', 'LangChain / AutoGen', 'FastAPI', 'Embeddings', 'Docker'],
+      demoType: 'agents'
     }
   ];
 
-  const skillCategories = [
+  const [activeDoorId, setActiveDoorId] = useState<string>('sabz-ai');
+  const [hoveredDoorId, setHoveredDoorId] = useState<string | null>(null);
+
+  const activeDoor = useMemo(() => {
+    return doors.find(d => d.id === activeDoorId) || doors[0];
+  }, [activeDoorId]);
+
+  // "Let's go back in time" (Reel Chronometer)
+  const timelineEras = [
     {
-      title: 'Full-Stack Web & Cloud Architecture',
-      icon: <Code2 className="w-5 h-5 text-blue-500" />,
-      skills: ['Next.js 15', 'React.js', 'Tailwind CSS', 'TypeScript', 'Node.js', 'REST APIs', 'PostgreSQL / SQL', 'Headless CMS', 'Git / GitHub']
+      year: '2026',
+      period: 'JAN 2026 - PRESENT',
+      role: 'Founder & CEO — Zepra Tech',
+      subtitle: 'Leading Enterprise Software & Global AI Initiatives',
+      details: [
+        'Leading executive technology vision, enterprise development, and architectural design at Zepra Tech (gozepra.tech).',
+        'Achieved Top 5 Global Finalist ranking at the prestigious 4th International AEIF AI Showdown 2026 with SABZ AI Traffic System.',
+        'Architecting intelligent web platforms and agentic automation workflows for high-growth ventures.'
+      ],
+      badges: ['Founder & CEO', 'AEIF Top 5', 'Next.js 15', 'Edge AI', 'Executive Leadership']
     },
     {
-      title: 'AI, Automation & Systems Engineering',
-      icon: <Cpu className="w-5 h-5 text-indigo-500" />,
-      skills: ['AI Architecture & Pitching', 'Document Automation', 'Computer Vision (OpenCV)', 'YOLOv8', 'Python', 'Digital Logic Design', 'Data Structures & Algorithms']
+      year: '2025',
+      period: 'JAN 2025 - DEC 2025',
+      role: 'Lead Architect — Autonomous Resume & Vector Engine',
+      subtitle: 'Data Pipeline Engineering & Full-Stack Solutions',
+      details: [
+        'Engineered the LinkedIn Autonomous Resume & Executive Dossier Engine, generating 2.2MB high-DPI vector dossiers directly from structured profile data.',
+        'Developed production full-stack web applications with React, TypeScript, Tailwind CSS, and Node.js.',
+        'Created high-performance interactive client modules, custom ROI estimators, and responsive interfaces.'
+      ],
+      badges: ['Autonomous Vector Engine', 'TypeScript', 'Node.js', 'React', 'Puppeteer']
     },
     {
-      title: 'Digital Marketing & Next-Gen Search (GEO/AEO)',
-      icon: <BarChart3 className="w-5 h-5 text-cyan-500" />,
-      skills: ['GEO (Generative Engine Opt.)', 'AEO (Answer Engine Opt.)', 'SEO Strategy', 'Meta Ads Manager', 'Google Ads Manager', 'TikTok Campaigns', 'Funnel CRO', 'Lead Pipelines']
+      year: '2024',
+      period: 'JAN 2024 - DEC 2024',
+      role: 'Full-Stack Developer & Technical Consultant',
+      subtitle: 'Modern Web Engineering & Algorithmic Design',
+      details: [
+        'Delivered high-performance frontend and backend services for diverse clients.',
+        'Implemented modern UI/UX design systems with fluid animations, micro-interactions, and accessibility standards.',
+        'Deepened expertise in distributed computing, asynchronous task queues, and database optimization.'
+      ],
+      badges: ['Full-Stack', 'Frontend UI/UX', 'RESTful APIs', 'Database Design']
+    },
+    {
+      year: 'Academic',
+      period: 'FOUNDATIONAL DEGREE',
+      role: 'Bachelor of Science in Computer Science (BSCS)',
+      subtitle: 'Verified Academic Honors & Theoretical Rigor',
+      details: [
+        'Comprehensive computer science education with top grades across Algorithms, Data Structures, Operating Systems, Computer Architecture, and Artificial Intelligence.',
+        'Developed foundational research in neural networks, computer vision, and real-time distributed systems.',
+        'Synchronized academic and professional credentials documented in official executive dossier.'
+      ],
+      badges: ['BSCS Degree', 'Algorithms & DS', 'Operating Systems', 'AI & ML Honors']
     }
   ];
 
-  const experiences = [
-    {
-      role: 'Chief Executive Officer & Founder',
-      company: 'Zepra Tech (Full-time)',
-      period: 'Feb 2025 – Present',
-      location: 'Lahore, Punjab, Pakistan (Hybrid)',
-      type: 'Executive Leadership',
-      bullets: [
-        'Lead overall company vision, client acquisition, and growth strategies for a digital agency specializing in full-stack web solutions, SEO, and paid performance advertising.',
-        'Combine technology and design—from Next.js web applications and custom calculators to Shopify ecosystems and automated pipelines—to empower enterprise brands.',
-        'Drive dual-region expansion spanning clients across Lahore, Pakistan and Andover, MA, United States.'
-      ]
-    },
-    {
-      role: 'Director of Business Development',
-      company: 'Zepra Tech (Freelance / Remote)',
-      period: 'May 2026 – Present',
-      location: 'United States (Remote)',
-      type: 'International Growth',
-      bullets: [
-        'Responsible for identifying new market opportunities, building strategic partnerships, and securing high-value contracts to drive corporate growth and recurring revenue.',
-        'Pioneer client scoping frameworks that forecast software delivery milestones and ROI lift.'
-      ]
-    },
-    {
-      role: 'Exclusive Sales Agent',
-      company: 'GSG Technology Co. (Full-time)',
-      period: 'Jan 2026 – Present',
-      location: 'Lahore, Punjab, Pakistan (On-site)',
-      type: 'Client Solutions',
-      bullets: [
-        'Handle strategic client communications, negotiation pipelines, and manage project execution to drive enterprise sales objectives.'
-      ]
-    },
-    {
-      role: 'Appointment Scheduler & Systems Operations',
-      company: 'Integrated IT Training (Part-time)',
-      period: 'Jan 2026 – Present',
-      location: 'United States (Remote)',
-      type: 'Operations',
-      bullets: [
-        'Coordinate and secure high-value B2B appointments and manage outreach schedules targeting international technology markets.'
-      ]
-    },
-    {
-      role: 'Customer Support & E-commerce Operations Specialist',
-      company: 'Planlab Solutions (Full-time)',
-      period: 'Apr 2025 – Apr 2026',
-      location: 'Lahore, Punjab, Pakistan (On-site)',
-      type: 'Operations & Care',
-      bullets: [
-        'Managed customer support for high-volume online stores, resolving complex order, fulfillment, and product performance queries.',
-        'Maintained e-commerce operational workflows and oversaw social media brand presence and customer engagement.'
-      ]
-    },
-    {
-      role: 'SMS & Email Marketing Specialist',
-      company: 'QUICKSOL LLC (Part-time)',
-      period: 'Jul 2024 – Aug 2024',
-      location: 'Lahore, Punjab, Pakistan (On-site)',
-      type: 'Growth Marketing',
-      bullets: [
-        'Executed targeted multi-channel outreach campaigns via SMS and email to engage audiences and drive customer acquisition.',
-        'Successfully closed high-converting leads, generating direct sales conversions within campaign lifecycles.'
-      ]
+  const [selectedEraIndex, setSelectedEraIndex] = useState(0);
+  const [isPlayingTimeline, setIsPlayingTimeline] = useState(false);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPlayingTimeline) {
+      interval = setInterval(() => {
+        setSelectedEraIndex(prev => (prev + 1) % timelineEras.length);
+      }, 4000);
     }
-  ];
+    return () => clearInterval(interval);
+  }, [isPlayingTimeline, timelineEras.length]);
 
-  const education = [
-    {
-      degree: 'Bachelor of Science in Computer Science (BSCS)',
-      institution: 'Lahore Garrison University (LGU)',
-      period: 'Sep 2025 – Present',
-      grade: 'Grade: A',
-      details: 'Active in Hackathons, Tech Meetups, Industry Tours, and Entrepreneurship Circles. Focused on SQL Architecture, Digital Logic Design, Data Structures, and Software Systems Lifecycle (FA25-BSCS-233).'
-    },
-    {
-      degree: 'Intermediate in Computer Science (ICS)',
-      institution: 'Govt Khawaja Rafique Shaheed College, Walton Lahore',
-      period: '2023 – 2025',
-      grade: 'Grade: 80%',
-      details: 'Comprehensive foundational training in computer science, programming fundamentals, and mathematics.'
-    },
-    {
-      degree: 'Fundamental & Secondary Schooling',
-      institution: 'DHA Education System, Lahore',
-      period: '2009 – 2018',
-      grade: 'Matriculation Foundation',
-      details: 'Primary, secondary, and leadership foundations developed within the premier DHA education framework.'
-    }
-  ];
+  const activeEra = timelineEras[selectedEraIndex];
 
-  // Filtered projects by tab and query
-  const filteredProjects = useMemo(() => {
-    return projects.filter(p => {
-      const matchesTab = activeTab === 'all' || p.category === activeTab;
-      const matchesQuery = searchQuery === '' || 
-        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.techStack.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        p.categoryLabel.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesTab && matchesQuery;
-    });
-  }, [activeTab, searchQuery]);
+  // Estimator State
+  const [projectType, setProjectType] = useState<'mvp' | 'ai' | 'enterprise'>('ai');
+  const [speed, setSpeed] = useState<'standard' | 'accelerated'>('accelerated');
+  const [includeDossier, setIncludeDossier] = useState(true);
 
-  // Scoping / ROI Calculator Calculations
-  const calculatedEstimates = useMemo(() => {
-    let baseDays = 14;
-    let baseLift = 30;
-    let baseROI = 2.8;
+  const estimatedTimeline = useMemo(() => {
+    let weeks = projectType === 'mvp' ? 2 : projectType === 'ai' ? 3.5 : 6;
+    if (speed === 'accelerated') weeks = Math.max(1, Math.round(weeks * 0.65 * 10) / 10);
+    return weeks;
+  }, [projectType, speed]);
 
-    if (calcProjectType === 'web') {
-      baseDays = 14; baseLift = 40; baseROI = 3.2;
-    } else if (calcProjectType === 'ai') {
-      baseDays = 21; baseLift = 48; baseROI = 3.8;
-    } else if (calcProjectType === 'geo') {
-      baseDays = 10; baseLift = 55; baseROI = 4.2;
-    } else if (calcProjectType === 'saas') {
-      baseDays = 30; baseLift = 45; baseROI = 3.5;
-    }
+  const estimatedROI = useMemo(() => {
+    if (projectType === 'mvp') return '3x - 5x Launch Velocity';
+    if (projectType === 'ai') return '40% - 60% Manual Cost Reduction';
+    return '10x Scalability & Sub-100ms Performance';
+  }, [projectType]);
 
-    if (calcScale === 'mvp') {
-      baseDays = Math.round(baseDays * 0.7);
-      baseLift -= 5;
-    } else if (calcScale === 'enterprise') {
-      baseDays = Math.round(baseDays * 1.6);
-      baseLift += 15;
-      baseROI += 0.6;
-    }
-
-    let addonCount = 0;
-    Object.values(calcAddons).forEach(v => {
-      if (v) addonCount++;
-    });
-
-    const totalDays = baseDays + addonCount * 3;
-    const totalLift = Math.min(baseLift + addonCount * 4, 85);
-    const totalROI = (baseROI + addonCount * 0.15).toFixed(1);
-
-    return {
-      weeks: `${Math.ceil(totalDays / 7)} Weeks (${totalDays} Workdays)`,
-      lift: `+${totalLift}% Projected Lift`,
-      roi: `${totalROI}x Target ROI`,
-      tier: calcScale === 'enterprise' ? 'Enterprise Flagship' : calcScale === 'mvp' ? 'Rapid Launch MVP' : 'Core Production Grade'
-    };
-  }, [calcProjectType, calcScale, calcAddons]);
-
-  const transferCalculatorToContact = () => {
-    const summary = `Inquiry based on Scoping Calculator:
-- System Type: ${calcProjectType.toUpperCase()} Platform
-- Scale: ${calcScale.toUpperCase()}
-- Add-ons: ${Object.entries(calcAddons).filter(([_, v]) => v).map(([k]) => k).join(', ')}
-- Projected Timeline: ${calculatedEstimates.weeks}
-- Targeted Conversion: ${calculatedEstimates.lift}`;
-
-    setContactSubject(`Project Scope Request: ${calcProjectType.toUpperCase()} (${calcScale.toUpperCase()})`);
-    setContactMessage(summary);
-
-    const contactElem = document.getElementById('contact');
-    if (contactElem) {
-      contactElem.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  // Form State
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactSent, setContactSent] = useState(false);
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setFormStatus('sending');
+    setContactSent(true);
     setTimeout(() => {
-      setFormStatus('success');
-    }, 900);
+      setContactSent(false);
+      setContactModalOpen(false);
+      setContactMessage('');
+      setContactEmail('');
+    }, 2500);
   };
 
-  // Command Palette Items
-  const paletteItems = [
-    { title: 'Download Official Executive CV (PDF)', category: 'Resume', action: () => { window.open(cvPdfPath, '_blank'); setCommandPaletteOpen(false); } },
-    { title: 'View Visual Multi-Page CV Dossier', category: 'Resume', action: () => { setShowCvModal(true); setCommandPaletteOpen(false); } },
-    { title: 'SABZ AI — 5th Worldwide @ FAST AEIF Showdown', category: 'Honors', action: () => { setSelectedProject(projects[1]); setCommandPaletteOpen(false); } },
-    { title: 'LinkedIn Autonomous Resume Generator Case', category: 'Projects', action: () => { setSelectedProject(projects[0]); setCommandPaletteOpen(false); } },
-    { title: 'Zepra Tech Scoping & ROI Estimator', category: 'Tool', action: () => { document.getElementById('calculator')?.scrollIntoView({ behavior: 'smooth' }); setCommandPaletteOpen(false); } },
-    { title: 'Chat Directly via WhatsApp (+92 320 4154156)', category: 'Contact', action: () => { window.open('https://wa.me/923204154156', '_blank'); setCommandPaletteOpen(false); } },
-    { title: 'Copy Personal Email (daudlashari400@gmail.com)', category: 'Contact', action: () => { copyToClipboard('daudlashari400@gmail.com', 'personal'); setCommandPaletteOpen(false); } },
-    { title: 'Copy Agency Email (daud.lashari@gozepra.tech)', category: 'Contact', action: () => { copyToClipboard('daud.lashari@gozepra.tech', 'agency'); setCommandPaletteOpen(false); } },
-    { title: 'Visit Agency Platform (gozepra.tech)', category: 'Links', action: () => { window.open('https://gozepra.tech', '_blank'); setCommandPaletteOpen(false); } },
-    { title: 'Open LinkedIn Profile', category: 'Links', action: () => { window.open('https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/', '_blank'); setCommandPaletteOpen(false); } },
-    { title: 'Toggle Dark / Light Theme', category: 'Settings', action: () => { toggleDarkMode(); setCommandPaletteOpen(false); } }
-  ];
-
-  const filteredPaletteItems = paletteItems.filter(item => 
-    item.title.toLowerCase().includes(paletteSearch.toLowerCase()) ||
-    item.category.toLowerCase().includes(paletteSearch.toLowerCase())
-  );
+  // WhatsApp Pre-filled trigger
+  const openWhatsApp = (customText?: string) => {
+    const text = customText || `Hi Daud, I viewed your portfolio and would like to discuss a project with you!`;
+    const url = `https://wa.me/923286673627?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
 
   return (
-    <div className={`min-h-screen relative selection:bg-cyan-500/30 selection:text-cyan-300 transition-colors duration-300 ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'}`}>
-      
-      {/* Subtle Floating Ambient Background Glows */}
+    <div className={`min-h-screen transition-colors duration-500 font-sans ${
+      darkMode ? 'bg-[#090d16] text-slate-100' : 'bg-slate-50 text-slate-900'
+    }`}>
+      {/* Subtle Ambient Tech Glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-10 left-1/4 w-[500px] h-[500px] bg-blue-600/10 dark:bg-blue-500/15 rounded-full blur-[140px] animate-pulse-glow" />
-        <div className="absolute top-1/3 right-10 w-[420px] h-[420px] bg-cyan-500/10 dark:bg-cyan-400/15 rounded-full blur-[130px] animate-float" />
-        <div className="absolute bottom-20 left-10 w-[480px] h-[480px] bg-amber-500/10 dark:bg-amber-400/10 rounded-full blur-[150px] animate-float-reverse" />
-        <div className="absolute inset-0 bg-grid-pattern opacity-40 pointer-events-none" />
+        <div className={`absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full blur-[140px] opacity-20 transition-colors duration-700 ${
+          darkMode ? 'bg-cyan-500/20' : 'bg-cyan-300/30'
+        }`} />
+        <div className={`absolute top-1/3 right-10 w-[500px] h-[500px] rounded-full blur-[140px] opacity-15 transition-colors duration-700 ${
+          darkMode ? 'bg-indigo-500/20' : 'bg-indigo-300/30'
+        }`} />
+        <div className={`absolute bottom-10 left-1/3 w-[700px] h-[700px] rounded-full blur-[160px] opacity-15 transition-colors duration-700 ${
+          darkMode ? 'bg-emerald-500/15' : 'bg-emerald-300/20'
+        }`} />
       </div>
 
-      {/* ================= STICKY HEADER NAV ================= */}
-      <header className={`sticky top-0 z-40 backdrop-blur-xl border-b transition-colors ${darkMode ? 'bg-slate-950/80 border-slate-800/80' : 'bg-white/80 border-slate-200/90'}`}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between relative z-10">
+      {/* Top Floating Navigation Bar (Reel Style) */}
+      <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b transition-colors duration-300 ${
+        darkMode ? 'bg-[#090d16]/80 border-slate-800/80' : 'bg-white/80 border-slate-200/80 shadow-sm'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           
-          <a href="#hero" className="flex items-center gap-2.5 font-bold text-lg tracking-tight group">
-            <span className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 via-cyan-500 to-indigo-600 flex items-center justify-center text-white font-mono shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform">
-              M
-            </span>
-            <span>
-              Muhammad Daud <span className="text-cyan-500 font-medium hidden sm:inline">Ali Lashari</span>
-            </span>
+          {/* Logo / Monogram */}
+          <a href="#hero" className="flex items-center gap-3 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 p-[1.5px] shadow-lg shadow-cyan-500/20">
+              <div className={`w-full h-full rounded-[10px] flex items-center justify-center font-bold text-sm tracking-tighter ${
+                darkMode ? 'bg-slate-950 text-white' : 'bg-white text-slate-900'
+              }`}>
+                DL
+              </div>
+            </div>
+            <div>
+              <span className="font-bold text-base tracking-tight flex items-center gap-1.5">
+                Muhammad Daud <span className="text-cyan-400">.</span>
+              </span>
+              <span className="block text-[10px] uppercase font-mono tracking-wider text-slate-400 -mt-1">
+                Zepra Tech • AEIF Top 5
+              </span>
+            </div>
           </a>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
-            <a href="#about" className="hover:text-cyan-400 transition-colors">About</a>
-            <a href="#honors" className="hover:text-cyan-400 transition-colors">Honors</a>
-            <a href="#experience" className="hover:text-cyan-400 transition-colors">Career Timeline</a>
-            <a href="#projects" className="hover:text-cyan-400 transition-colors">Projects</a>
-            <a href="#calculator" className="hover:text-cyan-400 transition-colors flex items-center gap-1.5 text-cyan-400 font-semibold">
-              <Calculator className="w-3.5 h-3.5" />
-              <span>Scoping ROI</span>
+          {/* Desktop Navigation Links */}
+          <div className="hidden md:flex items-center gap-1 lg:gap-2">
+            <a href="#hero" className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              darkMode ? 'text-slate-300 hover:text-white hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}>
+              Home
             </a>
-            <a href="#skills" className="hover:text-cyan-400 transition-colors">Skills</a>
-            <a href="#contact" className="hover:text-cyan-400 transition-colors">Contact</a>
-          </nav>
+            <a href="#doors" className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 ${
+              darkMode ? 'text-slate-300 hover:text-white hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}>
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              The Doors
+            </a>
+            <a href="#timeline" className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              darkMode ? 'text-slate-300 hover:text-white hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}>
+              Back In Time
+            </a>
+            <button 
+              onClick={() => setEstimatorOpen(true)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                darkMode ? 'text-slate-300 hover:text-white hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              <Calculator className="w-3.5 h-3.5 text-cyan-400" />
+              ROI Calculator
+            </button>
+            <button 
+              onClick={() => setDossierModalOpen(true)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                darkMode ? 'text-cyan-400 bg-cyan-950/40 border border-cyan-500/30 hover:bg-cyan-900/40' : 'text-cyan-700 bg-cyan-50 border border-cyan-200 hover:bg-cyan-100'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              Dossier (PDF)
+            </button>
+          </div>
 
-          {/* Action Group */}
+          {/* Right Header Controls (Clock, Location, Actions) */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Quick Command Palette Button */}
+            {/* Live PKT Clock (Multan, Pakistan UTC+5) */}
+            <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-mono ${
+              darkMode ? 'border-slate-800 bg-slate-900/80 text-slate-300' : 'border-slate-200 bg-slate-100 text-slate-700'
+            }`}>
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+              <MapPin className="w-3 h-3 text-cyan-400" />
+              <span>Multan, PK</span>
+              <span className="text-slate-500">|</span>
+              <Clock className="w-3 h-3 text-amber-400" />
+              <span className="font-semibold text-cyan-400">{pktTime || '01:25 AM PKT'}</span>
+            </div>
+
+            {/* Command Palette Trigger */}
             <button
               onClick={() => setCommandPaletteOpen(true)}
-              className={`hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs border transition-all ${darkMode ? 'border-slate-800 bg-slate-900/80 text-slate-400 hover:border-slate-700 hover:text-slate-200' : 'border-slate-200 bg-slate-100 text-slate-600 hover:text-slate-900'}`}
-              title="Quick Command Search (Ctrl+K)"
+              className={`p-2 rounded-xl border text-xs font-mono transition-colors flex items-center gap-1.5 ${
+                darkMode ? 'border-slate-800 bg-slate-900/80 text-slate-400 hover:text-white hover:border-slate-700' : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900'
+              }`}
+              title="Command Palette (Ctrl+K)"
             >
-              <Command className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Search</span>
-              <kbd className="px-1.5 py-0.5 text-[10px] rounded bg-slate-800 text-slate-300 font-mono">⌘K</kbd>
+              <Command className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline text-[10px] text-slate-400">Ctrl+K</span>
             </button>
 
-            {/* Official CV Button */}
+            {/* Contact CTA */}
             <button
-              onClick={() => setShowCvModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-blue-600 via-cyan-600 to-indigo-600 hover:from-blue-500 hover:to-cyan-500 text-white shadow-md shadow-cyan-500/20 transition-all hover:scale-[1.02]"
+              onClick={() => setContactModalOpen(true)}
+              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md shadow-cyan-500/20 transition-all flex items-center gap-1.5"
             >
-              <FileCheck2 className="w-3.5 h-3.5" />
-              <span className="hidden xs:inline">Executive CV (PDF)</span>
-              <span className="xs:hidden">CV</span>
+              <Send className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Start Project</span>
+              <span className="sm:hidden">Talk</span>
             </button>
 
-            {/* Dark Mode Toggle */}
+            {/* Mobile Menu Toggle */}
             <button
-              onClick={toggleDarkMode}
-              className={`p-2 rounded-lg border transition-colors ${darkMode ? 'border-slate-800 hover:bg-slate-900 text-amber-400' : 'border-slate-200 hover:bg-slate-100 text-slate-600'}`}
-              aria-label="Toggle Theme"
-            >
-              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-
-            {/* Mobile Hamburger Menu Toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`lg:hidden p-2 rounded-lg border transition-colors ${darkMode ? 'border-slate-800 hover:bg-slate-900 text-slate-300' : 'border-slate-200 hover:bg-slate-100 text-slate-700'}`}
-              aria-label="Toggle Mobile Menu"
+              onClick={() => setMobileMenuOpen(prev => !prev)}
+              className="md:hidden p-2 rounded-xl text-slate-400 hover:text-white"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer */}
+        {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
-          <div className={`lg:hidden border-b px-4 py-4 space-y-3 animate-slide-down ${darkMode ? 'bg-slate-950/95 border-slate-800' : 'bg-white/95 border-slate-200'}`}>
-            <div className="flex flex-col space-y-2 text-sm font-medium">
-              <a 
-                href="#about" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-slate-800/40 transition-colors"
-              >
-                About Daud
-              </a>
-              <a 
-                href="#honors" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-slate-800/40 text-amber-400 font-semibold transition-colors flex items-center justify-between"
-              >
-                <span>Honors &amp; Pitches</span>
-                <span className="text-xs px-2 py-0.5 rounded bg-amber-500/20 font-bold">5th Worldwide</span>
-              </a>
-              <a 
-                href="#experience" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-slate-800/40 transition-colors"
-              >
-                Verified Career &amp; Education
-              </a>
-              <a 
-                href="#projects" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-slate-800/40 transition-colors"
-              >
-                Projects &amp; Systems
-              </a>
-              <a 
-                href="#calculator" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-slate-800/40 text-cyan-400 font-semibold transition-colors flex items-center gap-2"
-              >
-                <Calculator className="w-4 h-4" />
-                <span>Zepra Tech Scoping Calculator</span>
-              </a>
-              <a 
-                href="#skills" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-slate-800/40 transition-colors"
-              >
-                Technical Matrix
-              </a>
-              <a 
-                href="#contact" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-slate-800/40 transition-colors"
-              >
-                Contact &amp; Advisory
-              </a>
-            </div>
+          <div className={`md:hidden px-4 pt-2 pb-4 space-y-2 border-b ${
+            darkMode ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'
+          }`}>
+            <a 
+              href="#hero" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-lg text-sm font-medium"
+            >
+              Home
+            </a>
+            <a 
+              href="#doors" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-lg text-sm font-medium"
+            >
+              The Doors (Flagship Projects)
+            </a>
+            <a 
+              href="#timeline" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-lg text-sm font-medium"
+            >
+              Back In Time (Timeline & Experience)
+            </a>
+            <button 
+              onClick={() => { setMobileMenuOpen(false); setEstimatorOpen(true); }}
+              className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-between"
+            >
+              <span>ROI & Scope Calculator</span>
+              <Calculator className="w-4 h-4 text-cyan-400" />
+            </button>
+            <button 
+              onClick={() => { setMobileMenuOpen(false); setDossierModalOpen(true); }}
+              className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-between"
+            >
+              <span>Executive Dossier (Verified PDF)</span>
+              <Download className="w-4 h-4 text-emerald-400" />
+            </button>
+          </div>
+        )}
+      </nav>
 
-            <div className="pt-3 border-t border-slate-800/60 flex items-center justify-between">
-              <button
-                onClick={() => { setMobileMenuOpen(false); setShowCvModal(true); }}
-                className="flex items-center gap-1.5 text-xs text-cyan-400 font-semibold"
-              >
-                <FileCheck2 className="w-3.5 h-3.5" />
-                <span>View Executive CV</span>
-              </button>
-              <div className="flex items-center gap-3">
-                <a 
-                  href="https://wa.me/923204154156" 
-                  target="_blank" 
-                  rel="noreferrer"
-                  className="p-1.5 rounded text-emerald-400 hover:text-emerald-300"
-                  title="WhatsApp"
+      {/* SECTION 1: HERO SECTION (Reel 00:00 - 00:03) */}
+      <section id="hero" className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            
+            {/* Left Content Column */}
+            <div className="lg:col-span-7 space-y-6">
+              
+              {/* Status Pill Badge */}
+              <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border text-xs font-mono tracking-wide shadow-sm backdrop-blur-md transition-all duration-300 border-emerald-500/30 bg-emerald-500/10 text-emerald-300">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="font-semibold uppercase tracking-wider text-[11px]">Independent Tech Founder &amp; Architect</span>
+                <span className="text-emerald-500/50">•</span>
+                <span className="text-slate-300 text-[11px]">Available for work</span>
+              </div>
+
+              {/* Main Typography Header */}
+              <div className="space-y-3">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.1]">
+                  Hi, I'm <span className="bg-gradient-to-r from-white via-cyan-100 to-cyan-400 bg-clip-text text-transparent">Daud</span>.
+                </h1>
+                
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-slate-300 flex flex-wrap items-baseline gap-2">
+                  <span>I am a</span>
+                  <div className="inline-flex items-center relative">
+                    <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent underline decoration-cyan-500/40 decoration-wavy decoration-2 underline-offset-8">
+                      {displayedText}
+                    </span>
+                    <span className="inline-block w-[3px] h-7 bg-cyan-400 ml-1.5 animate-pulse" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Subtitle Bio */}
+              <p className={`text-base sm:text-lg leading-relaxed max-w-2xl ${
+                darkMode ? 'text-slate-300' : 'text-slate-600'
+              }`}>
+                Founder &amp; CEO at <strong className="text-white font-semibold">Zepra Tech</strong>, 
+                awarded <span className="text-amber-400 font-semibold">5th Worldwide Finalist</span> at the 4th International AEIF AI Showdown 2026. 
+                Engineering intelligent AI systems, high-throughput web applications, and autonomous agent workflows from vision to scale.
+              </p>
+
+              {/* Primary Call-to-Action Buttons (Reel Style) */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <button
+                  onClick={() => openWhatsApp()}
+                  className="px-6 py-3.5 rounded-xl font-semibold text-sm bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all shadow-lg shadow-cyan-500/25 flex items-center gap-2 group transform active:scale-95"
                 >
-                  <MessageSquare className="w-4 h-4" />
+                  <WhatsAppIcon className="w-4 h-4 text-slate-950" />
+                  <span>Start a project</span>
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </button>
+
+                <a
+                  href="#doors"
+                  className={`px-6 py-3.5 rounded-xl font-semibold text-sm border transition-all flex items-center gap-2 ${
+                    darkMode 
+                      ? 'border-slate-800 bg-slate-900/60 hover:bg-slate-800 text-slate-200 hover:text-white' 
+                      : 'border-slate-300 bg-white hover:bg-slate-100 text-slate-800'
+                  }`}
+                >
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span>See my work</span>
                 </a>
+
+                <button
+                  onClick={() => setDossierModalOpen(true)}
+                  className={`px-4 py-3.5 rounded-xl text-xs font-mono font-medium border transition-all flex items-center gap-2 ${
+                    darkMode ? 'border-cyan-500/30 bg-cyan-950/20 text-cyan-300 hover:bg-cyan-900/30' : 'border-cyan-300 bg-cyan-50 text-cyan-800 hover:bg-cyan-100'
+                  }`}
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Verified CV (PDF)</span>
+                </button>
+              </div>
+
+              {/* Quick Social & Verified Links */}
+              <div className="flex items-center gap-4 pt-3 text-xs text-slate-400">
+                <span className="font-mono uppercase tracking-wider text-[11px]">Connect:</span>
                 <a 
                   href="https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/" 
                   target="_blank" 
-                  rel="noreferrer"
-                  className="p-1.5 rounded text-slate-400 hover:text-cyan-400"
+                  rel="noopener noreferrer" 
+                  className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
                 >
-                  <Linkedin className="w-4 h-4" />
+                  <Linkedin className="w-3.5 h-3.5 text-cyan-400" /> LinkedIn
                 </a>
+                <span className="text-slate-600">•</span>
+                <a 
+                  href="https://github.com/ecomwithdaud-hub" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
+                >
+                  <Code2 className="w-3.5 h-3.5 text-slate-300" /> GitHub
+                </a>
+                <span className="text-slate-600">•</span>
                 <a 
                   href="https://gozepra.tech" 
                   target="_blank" 
-                  rel="noreferrer"
-                  className="p-1.5 rounded text-slate-400 hover:text-cyan-400"
+                  rel="noopener noreferrer" 
+                  className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
                 >
-                  <Globe className="w-4 h-4" />
+                  <Globe className="w-3.5 h-3.5 text-emerald-400" /> gozepra.tech
                 </a>
               </div>
             </div>
-          </div>
-        )}
-      </header>
 
-      {/* ================= HERO SECTION (WITH FLOATING PORTRAIT & BADGES) ================= */}
-      <section id="hero" className="relative py-16 md:py-24 border-b border-slate-800/40 z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* Left Column Text */}
-            <div className="lg:col-span-7 space-y-6">
+            {/* Right Column: Signature Portrait Card with Interactive Hanging String Pull Light Switch */}
+            <div className="lg:col-span-5 relative flex justify-center">
               
-              {/* Highlight Trophy Pill */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30 backdrop-blur-md shadow-sm">
-                <Trophy className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                <span>5th Position Worldwide (Out of 400+ Teams) @ 4th AEIF AI Showdown 2026</span>
-              </div>
-
-              <div className="space-y-2">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
-                  Muhammad Daud <br />
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-cyan-400 to-indigo-400">
-                    Ali Lashari
-                  </span>
-                </h1>
-                <p className="text-sm sm:text-base font-medium text-cyan-400/90 font-mono tracking-tight">
-                  Founder &amp; CEO @ Zepra Tech • AI Systems Architect • BSCS Scholar (Grade A, LGU)
-                </p>
-              </div>
-
-              <p className={`text-base sm:text-lg leading-relaxed ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                Tech entrepreneur and full-stack systems engineer. Combining rigorous computer science fundamentals with hands-on digital growth engines, automated document architectures, and high-impact AI systems.
-              </p>
-
-              {/* Quick Info Badges */}
-              <div className="flex flex-wrap gap-2.5 text-xs font-medium">
-                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${darkMode ? 'bg-slate-900/90 border-slate-800 text-slate-300' : 'bg-white border-slate-200 text-slate-700 shadow-sm'}`}>
-                  <MapPin className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Lahore, PK (Hybrid) &amp; US (Remote)</span>
-                </div>
-                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${darkMode ? 'bg-slate-900/90 border-slate-800 text-slate-300' : 'bg-white border-slate-200 text-slate-700 shadow-sm'}`}>
-                  <GraduationCap className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>BSCS Grade A (FA25-BSCS-233)</span>
-                </div>
-                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${darkMode ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Available for Contracts &amp; Advisory</span>
-                </div>
-              </div>
-
-              {/* CTA Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-2">
-                <button
-                  onClick={() => setShowCvModal(true)}
-                  className="px-6 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-blue-600 via-cyan-500 to-indigo-600 hover:from-blue-500 hover:to-cyan-400 text-white shadow-lg shadow-cyan-500/25 transition-all flex items-center gap-2 hover:scale-[1.02]"
-                >
-                  <FileCheck2 className="w-4 h-4" />
-                  <span>View Official CV (PDF)</span>
-                </button>
-
-                <a
-                  href="#calculator"
-                  className={`px-5 py-3 rounded-xl font-semibold text-sm border flex items-center gap-2 transition-all ${darkMode ? 'border-cyan-500/40 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20' : 'border-cyan-400 bg-cyan-50 text-cyan-800 hover:bg-cyan-100'}`}
-                >
-                  <Calculator className="w-4 h-4 text-cyan-400" />
-                  <span>Project Scoping Tool</span>
-                </a>
-
-                <a
-                  href="https://wa.me/923204154156"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-3 rounded-xl font-semibold text-sm border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 transition-all flex items-center gap-2"
-                  title="Direct WhatsApp Chat"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  <span>WhatsApp</span>
-                </a>
-
-                <div className="flex items-center gap-2 pl-1">
-                  <a
-                    href="https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`p-2.5 rounded-xl border transition-colors ${darkMode ? 'border-slate-800 hover:border-cyan-500/50 hover:text-cyan-400 text-slate-400' : 'border-slate-200 hover:border-cyan-500/50 hover:text-cyan-600 text-slate-600'}`}
-                    aria-label="LinkedIn"
-                  >
-                    <Linkedin className="w-4 h-4" />
-                  </a>
-                  <a
-                    href="https://github.com/ecomwithdaud-hub"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`p-2.5 rounded-xl border transition-colors ${darkMode ? 'border-slate-800 hover:border-cyan-500/50 hover:text-cyan-400 text-slate-400' : 'border-slate-200 hover:border-cyan-500/50 hover:text-cyan-600 text-slate-600'}`}
-                    aria-label="GitHub"
-                  >
-                    <Code2 className="w-4 h-4" />
-                  </a>
-                  <a
-                    href="https://gozepra.tech"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`p-2.5 rounded-xl border transition-colors ${darkMode ? 'border-slate-800 hover:border-cyan-500/50 hover:text-cyan-400 text-slate-400' : 'border-slate-200 hover:border-cyan-500/50 hover:text-cyan-600 text-slate-600'}`}
-                    aria-label="Website"
-                  >
-                    <Globe className="w-4 h-4" />
-                  </a>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Right Column: Floating Portrait & Floating Tech Badges */}
-            <div className="lg:col-span-5 flex justify-center relative">
-              
-              {/* Floating Badge 1: Top Right */}
-              <div className="absolute -top-4 -right-2 sm:-right-4 z-20 animate-float-badge">
-                <div className="px-3.5 py-2 rounded-xl backdrop-blur-xl bg-slate-900/90 border border-amber-500/40 shadow-xl shadow-amber-500/10 text-xs font-semibold text-amber-300 flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-amber-400" />
-                  <span>5th @ AEIF AI Showdown '26</span>
-                </div>
-              </div>
-
-              {/* Floating Badge 2: Bottom Left */}
-              <div className="absolute -bottom-4 -left-2 sm:-left-4 z-20 animate-float">
-                <div className="px-3.5 py-2 rounded-xl backdrop-blur-xl bg-slate-900/90 border border-cyan-500/40 shadow-xl shadow-cyan-500/10 text-xs font-semibold text-cyan-300 flex items-center gap-2">
-                  <Briefcase className="w-4 h-4 text-cyan-400" />
-                  <span>CEO @ Zepra Tech</span>
-                </div>
-              </div>
-
-              {/* Main Portrait Card */}
-              <div className="relative group w-full max-w-sm">
-                <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-500 via-blue-600 to-cyan-400 blur-lg opacity-40 group-hover:opacity-75 transition duration-500"></div>
+              {/* Outer Card Frame with Glassmorphism */}
+              <div className="relative w-full max-w-[380px] group">
                 
-                <div className={`relative rounded-3xl p-4 border overflow-hidden transition-all duration-300 ${darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-2xl'}`}>
+                {/* INTERACTIVE HANGING STRING PULL CORD (Reel Flex Switch) */}
+                <div 
+                  onClick={handlePullString}
+                  className="absolute -top-12 right-6 z-30 cursor-pointer flex flex-col items-center select-none group/cord"
+                  title="Click to pull cord and toggle Theme!"
+                >
+                  {/* Cord Line */}
+                  <div className={`w-[2px] h-14 bg-gradient-to-b from-amber-200/80 via-amber-400 to-amber-500 transition-transform origin-top ${
+                    stringPulling ? 'scale-y-125' : 'group-hover/cord:scale-y-110'
+                  }`} />
                   
-                  <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-slate-800 relative shadow-inner">
+                  {/* Brass Pull Handle / Tassel */}
+                  <div className={`w-3.5 h-6 rounded-full bg-gradient-to-b from-amber-300 via-amber-500 to-amber-700 shadow-md shadow-amber-500/50 flex items-center justify-center transition-transform ${
+                    stringPulling ? 'translate-y-3 scale-110' : 'group-hover/cord:translate-y-1'
+                  }`}>
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-100" />
+                  </div>
+                  
+                  {/* Tooltip hint */}
+                  <span className="absolute -bottom-6 right-0 text-[9px] font-mono whitespace-nowrap px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30 opacity-0 group-hover/cord:opacity-100 transition-opacity">
+                    Pull light switch
+                  </span>
+                </div>
+
+                {/* Ambient Glow behind card */}
+                <div className={`absolute -inset-1 rounded-3xl blur-xl opacity-60 transition-all duration-700 ${
+                  darkMode ? 'bg-gradient-to-tr from-cyan-500/30 via-blue-600/20 to-purple-600/30' : 'bg-gradient-to-tr from-cyan-300/40 via-blue-300/30 to-purple-300/40'
+                }`} />
+
+                {/* Card Container */}
+                <div className={`relative rounded-3xl p-4 border backdrop-blur-xl shadow-2xl transition-all duration-500 ${
+                  darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white/95 border-slate-200'
+                }`}>
+                  
+                  {/* Top Bar of Ability Card */}
+                  <div className="flex items-center justify-between px-2 pb-3 mb-2 border-b border-slate-800/60">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">
+                        Executive Ability Card
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                      Top 5 Finalist
+                    </span>
+                  </div>
+
+                  {/* Daud's Photograph in Suit */}
+                  <div className="relative rounded-2xl overflow-hidden aspect-[4/5] bg-gradient-to-b from-slate-800 to-slate-950 border border-slate-800/80">
                     <img
-                      src={profileImg}
+                      src="/profile.png"
                       alt="Muhammad Daud Ali Lashari"
-                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+                      className="w-full h-full object-cover object-top filter contrast-[1.03] brightness-[0.98] transition-transform duration-700 group-hover:scale-105"
                     />
-                    
-                    {/* Portrait Glass Tag */}
-                    <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl backdrop-blur-xl bg-slate-950/85 border border-slate-700/60 text-white text-xs space-y-1 shadow-lg">
-                      <div className="flex items-center justify-between font-semibold text-slate-100">
-                        <span>Muhammad Daud Ali Lashari</span>
-                        <span className="flex items-center gap-1 text-[11px] text-emerald-400 font-mono">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                          Online
-                        </span>
+
+                    {/* Gradient Overlay for Corporate Vignette */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+
+                    {/* Floating Corner Achievement Pill */}
+                    <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl backdrop-blur-md bg-slate-950/80 border border-slate-700/60 shadow-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-bold text-white tracking-wide">
+                            Muhammad Daud Ali Lashari
+                          </p>
+                          <p className="text-[10px] text-cyan-300 font-mono">
+                            Founder &amp; CEO • Zepra Tech
+                          </p>
+                        </div>
+                        <div className="w-8 h-8 rounded-lg bg-amber-400/10 border border-amber-400/30 flex items-center justify-center">
+                          <Trophy className="w-4 h-4 text-amber-400" />
+                        </div>
                       </div>
-                      <p className="text-cyan-400 text-[11px] font-medium flex items-center gap-1.5">
-                        <span>Systems Architect &amp; Venture Strategist</span>
-                      </p>
                     </div>
                   </div>
 
-                  <div className="pt-3.5 space-y-2 text-xs">
-                    <div className="flex justify-between items-center text-slate-400">
-                      <span>Executive Agency</span>
-                      <a href="https://gozepra.tech" target="_blank" rel="noreferrer" className="text-cyan-400 font-semibold hover:underline">
-                        gozepra.tech
-                      </a>
-                    </div>
-                    <div className="flex justify-between items-center text-slate-400">
-                      <span>WhatsApp Direct</span>
-                      <a href="https://wa.me/923204154156" target="_blank" rel="noreferrer" className="text-emerald-400 font-mono font-medium hover:underline">
-                        +92 320 4154156
-                      </a>
-                    </div>
-                    <div className="flex justify-between items-center text-slate-400">
-                      <span>Headquarters</span>
-                      <span className="text-slate-300 font-mono text-[11px]">DHA Phase 8, Lahore</span>
-                    </div>
+                  {/* Card Footer Tag (Reel "my ability card") */}
+                  <div className="pt-3 flex items-center justify-between px-2 text-xs">
+                    <button
+                      onClick={() => setDossierModalOpen(true)}
+                      className="text-[11px] font-mono text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-1.5"
+                    >
+                      <Eye className="w-3.5 h-3.5" /> Inspect verified CV
+                    </button>
+                    <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> 100% Verified
+                    </span>
                   </div>
-
                 </div>
               </div>
-
             </div>
+          </div>
+        </div>
 
+        {/* BOTTOM MARQUEE TICKER (Reel Flex Ticker) */}
+        <div className={`mt-14 py-3 border-y overflow-hidden whitespace-nowrap ${
+          darkMode ? 'bg-slate-950/80 border-slate-800/80 text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-600'
+        }`}>
+          <div className="inline-flex items-center gap-8 font-mono text-xs uppercase tracking-widest animate-[marquee_28s_linear_infinite]">
+            <span className="flex items-center gap-2 text-cyan-400 font-bold">
+              <Sparkles className="w-3.5 h-3.5" /> AVAILABLE FOR HIGH-IMPACT VENTURES
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-2 text-amber-400 font-bold">
+              <Trophy className="w-3.5 h-3.5" /> 5th WORLDWIDE FINALIST @ 4TH INTERNATIONAL AEIF AI SHOWDOWN 2026
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-2 text-emerald-400 font-bold">
+              <Building2 className="w-3.5 h-3.5" /> FOUNDER &amp; CEO AT ZEPRA TECH (GOZEPRA.TECH)
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-2 text-blue-400 font-bold">
+              <Cpu className="w-3.5 h-3.5" /> LINKEDIN AUTONOMOUS RESUME &amp; EXECUTIVE DOSSIER ENGINE
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-2 text-purple-400 font-bold">
+              <BrainCircuit className="w-3.5 h-3.5" /> AUTONOMOUS MULTI-AGENT SWARMS &amp; COMPUTER VISION
+            </span>
+            <span>•</span>
           </div>
         </div>
       </section>
 
-      {/* ================= KEY IMPACT METRICS (KPI BAR) ================= */}
-      <section className={`py-8 border-b transition-colors ${darkMode ? 'bg-slate-900/50 border-slate-800/80' : 'bg-slate-100/80 border-slate-200'}`}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            
-            <div className="space-y-1">
-              <div className="text-2xl sm:text-3xl font-extrabold text-amber-400 flex items-center justify-center gap-1.5">
-                <Trophy className="w-6 h-6 text-amber-400" />
-                <span>5th Global</span>
-              </div>
-              <p className="text-xs text-slate-400 font-medium">AEIF AI Showdown (400+ Teams @ FAST)</p>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-2xl sm:text-3xl font-extrabold text-cyan-400">
-                +45%
-              </div>
-              <p className="text-xs text-slate-400 font-medium">Conversion Lift via Zepra Tech Engines</p>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-2xl sm:text-3xl font-extrabold text-blue-400">
-                3.2x
-              </div>
-              <p className="text-xs text-slate-400 font-medium">Target Growth ROI (GEO/AEO Funnels)</p>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-2xl sm:text-3xl font-extrabold text-emerald-400 flex items-center justify-center gap-1">
-                <ShieldCheck className="w-6 h-6 text-emerald-400" />
-                <span>100</span>
-              </div>
-              <p className="text-xs text-slate-400 font-medium">Lighthouse Performance Benchmark</p>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ================= HONORS & ACHIEVEMENTS FEATURED SECTION ================= */}
-      <section id="honors" className={`py-16 border-b transition-colors ${darkMode ? 'border-slate-800 bg-slate-900/30' : 'border-slate-200 bg-slate-50'}`}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      {/* SECTION 2: "MAGIC HAPPENS BEHIND THE DOORS" (Reel 00:04 - 00:10) */}
+      <section id="doors" className="py-20 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="max-w-3xl mb-10">
-            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-400 mb-2">
-              <Trophy className="w-4 h-4" />
-              <span>Competitive Recognitions</span>
+          {/* Section Header */}
+          <div className="text-center max-w-3xl mx-auto space-y-3 mb-14">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs font-mono">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>INTERACTIVE 3D PORTALS</span>
             </div>
-            <h3 className="text-2xl sm:text-3xl font-bold">Featured Honors &amp; Pitch Victories</h3>
-            <p className={`text-sm mt-2 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-              Demonstrated competitive excellence evaluated by international juries and tech leaders.
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
+              Magic happens behind the doors <span className="text-amber-400">.</span>
+            </h2>
+            <p className={`text-base sm:text-lg ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+              Select a portal to swing the door open and explore flagship architectures, production code, and live global achievements.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            
-            {/* Spotlight Achievement: 4th AEIF 2026 */}
-            <div className={`lg:col-span-2 p-6 rounded-2xl border relative overflow-hidden transition-all duration-300 hover:border-amber-400/60 ${darkMode ? 'bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/25 border-amber-500/40' : 'bg-gradient-to-br from-white via-amber-50/40 to-white border-amber-300 shadow-md'}`}>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1.5">
-                  <Trophy className="w-3.5 h-3.5" />
-                  <span>5th Position Worldwide / Nationwide</span>
-                </span>
-                <span className="text-xs font-mono text-slate-400">FAST-NUCES Lahore (Oct 2026)</span>
-              </div>
-
-              <h4 className="text-xl sm:text-2xl font-bold mb-2">
-                4th International AEIF Foundation AI Showdown 2026
-              </h4>
-              <p className="text-xs font-mono text-amber-400/90 mb-3">
-                Project: SABZ AI — Adaptive Smart Traffic Control System
-              </p>
-              <p className={`text-xs sm:text-sm leading-relaxed mb-4 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                Selected <strong>5th out of 400+ national and international teams</strong> at FAST University Lahore. Presented our innovative AI solution before an esteemed panel of international jurors including <strong>Dr. Fan (MIT)</strong>, <strong>Dr. Steven (Silicon Valley)</strong>, <strong>Dr. Saffiullah Chaudhry (LUMS)</strong>, and UBAAS faculty, recognized for technological novelty, commercial feasibility, and delivery viability.
-              </p>
-
-              <div className="flex flex-wrap gap-2 text-xs font-medium pt-1">
-                <span className="px-3 py-1 rounded-md bg-slate-800 text-amber-300 border border-amber-500/30">
-                  MIT &amp; Silicon Valley Jury
-                </span>
-                <span className="px-3 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
-                  400+ Competing Teams
-                </span>
-                <span className="px-3 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
-                  FAST-NUCES Laureate
-                </span>
-              </div>
-            </div>
-
-            {/* Civic Innovation Hackathon */}
-            <div className={`p-6 rounded-2xl border transition-all duration-300 hover:border-cyan-500/50 ${darkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-semibold px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center gap-1">
-                  <BrainCircuit className="w-3.5 h-3.5" />
-                  <span>City Intelligence</span>
-                </span>
-                <span className="text-xs font-mono text-slate-400">LGU '26</span>
-              </div>
-              <h4 className="text-base font-bold mb-2">Civic Innovation Hackathon 2026</h4>
-              <p className={`text-xs leading-relaxed mb-4 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                Engineered and presented <strong>Lahore Pulse AI</strong> under the City Intelligence &amp; Urban Mobility track at Lahore Garrison University.
-              </p>
-              <div className="text-[11px] font-semibold text-cyan-400 flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Featured LGU Innovation Project</span>
-              </div>
-            </div>
-
-            {/* SOFTEC 2026 */}
-            <div className={`p-6 rounded-2xl border transition-all duration-300 hover:border-blue-500/50 ${darkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-semibold px-2.5 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center gap-1">
-                  <Code2 className="w-3.5 h-3.5" />
-                  <span>Web Competition</span>
-                </span>
-                <span className="text-xs font-mono text-slate-400">FAST-NUCES</span>
-              </div>
-              <h4 className="text-base font-bold mb-2">SOFTEC '26 Web Development</h4>
-              <p className={`text-xs leading-relaxed mb-4 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                Led Team Zepra Tech at FAST-NUCES Lahore, architecting sub-second, highly accessible web applications under live competition constraints.
-              </p>
-              <div className="text-[11px] font-semibold text-blue-400 flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Team Zepra Tech Lead</span>
-              </div>
-            </div>
-
-            {/* SUPARCO Technical Delegation */}
-            <div className={`lg:col-span-2 p-6 rounded-2xl border transition-all duration-300 hover:border-indigo-500/50 ${darkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold px-2.5 py-1 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1">
-                  <Building2 className="w-3.5 h-3.5" />
-                  <span>National Delegation</span>
-                </span>
-                <span className="text-xs font-mono text-slate-400">SUPARCO Space Forum</span>
-              </div>
-              <h4 className="text-base font-bold mb-2">SUPARCO Technical Delegation Briefing</h4>
-              <p className={`text-xs leading-relaxed ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                Registered participant for the national technical delegation briefing with Pakistan's National Space Agency (SUPARCO), focusing on space-tech applications, GIS satellite integration, and high-performance data computing systems.
-              </p>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ================= EXECUTIVE SUMMARY / ABOUT ================= */}
-      <section id="about" className={`py-16 border-b transition-colors ${darkMode ? 'border-slate-900 bg-slate-950' : 'border-slate-200 bg-white'}`}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          
-          <div className="max-w-3xl">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-500 mb-2">Executive Summary</h2>
-            <h3 className="text-2xl sm:text-3xl font-bold mb-6">Building Modern Software &amp; Scaling Digital Growth</h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className={`p-6 rounded-2xl border transition-all duration-300 hover:-translate-y-1 ${darkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-              <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mb-4">
-                <Rocket className="w-5 h-5" />
-              </div>
-              <h4 className="text-lg font-bold mb-2">Agency Executive &amp; Founder</h4>
-              <p className={`text-sm leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                As CEO of Zepra Tech, I direct technical teams and consult on full-stack web architecture, dynamic client scoping calculators, and dual-region operations (Lahore, PK &amp; Andover, MA).
-              </p>
-            </div>
-
-            <div className={`p-6 rounded-2xl border transition-all duration-300 hover:-translate-y-1 ${darkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center mb-4">
-                <Code2 className="w-5 h-5" />
-              </div>
-              <h4 className="text-lg font-bold mb-2">Full-Stack Architect</h4>
-              <p className={`text-sm leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                Specialized in TypeScript/JavaScript ecosystems (Next.js 15, React, Node.js, Tailwind CSS). Focused on scalable relational databases (SQL), automated document generation, and 100 Lighthouse performance.
-              </p>
-            </div>
-
-            <div className={`p-6 rounded-2xl border transition-all duration-300 hover:-translate-y-1 ${darkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-4">
-                <Search className="w-5 h-5" />
-              </div>
-              <h4 className="text-lg font-bold mb-2">GEO / AEO &amp; Paid Growth</h4>
-              <p className={`text-sm leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                Pioneering Generative Engine Optimization (GEO), Answer Engine Optimization (AEO), Meta Ads, Google Ads Manager, and high-ROI multi-channel growth funnels for e-commerce and real estate.
-              </p>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ================= INTERACTIVE ZEPRA TECH SCOPING & ROI CALCULATOR ================= */}
-      <section id="calculator" className={`py-16 border-b transition-colors ${darkMode ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-cyan-50/40'}`}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          
-          <div className="max-w-3xl mb-10">
-            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-cyan-400 mb-2">
-              <Calculator className="w-4 h-4" />
-              <span>Interactive Client Tool</span>
-            </div>
-            <h3 className="text-2xl sm:text-3xl font-bold">Zepra Tech Scoping &amp; ROI Estimator</h3>
-            <p className={`text-sm mt-2 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-              Simulate your enterprise software parameters, projected delivery schedule, and forecasted growth lift in real-time.
-            </p>
-          </div>
-
+          {/* DOORS INTERACTIVE CONTAINER */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            {/* Controls Side */}
-            <div className={`lg:col-span-7 p-6 sm:p-8 rounded-2xl border space-y-6 ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-              
-              {/* 1. Project Type */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-                  1. Select System Architecture
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {[
-                    { id: 'web', label: 'Enterprise Web', icon: Code2 },
-                    { id: 'ai', label: 'AI Intelligence', icon: BrainCircuit },
-                    { id: 'geo', label: 'GEO/AEO Growth', icon: BarChart3 },
-                    { id: 'saas', label: 'Custom SaaS', icon: Layers }
-                  ].map((type) => {
-                    const Icon = type.icon;
-                    const isSelected = calcProjectType === type.id;
-                    return (
-                      <button
-                        key={type.id}
-                        type="button"
-                        onClick={() => setCalcProjectType(type.id as any)}
-                        className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between ${isSelected ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 font-bold ring-1 ring-cyan-500' : darkMode ? 'border-slate-800 bg-slate-950 text-slate-300 hover:border-slate-700' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'}`}
-                      >
-                        <Icon className="w-4 h-4 mb-2 text-cyan-400" />
-                        <span className="text-xs">{type.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+            {/* The 4 3D Doors Row (Left / Top Grid) */}
+            <div className="lg:col-span-5 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-4">
+              {doors.map((door) => {
+                const isOpen = activeDoorId === door.id;
+                const isHovered = hoveredDoorId === door.id;
 
-              {/* 2. Scale / Complexity */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-                  2. Deployment Scale &amp; Scope
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: 'mvp', label: 'Sprint MVP', desc: 'Fast prototype' },
-                    { id: 'standard', label: 'Standard Production', desc: 'Core business ready' },
-                    { id: 'enterprise', label: 'Global Enterprise', desc: 'High concurrency' }
-                  ].map((scale) => {
-                    const isSelected = calcScale === scale.id;
-                    return (
-                      <button
-                        key={scale.id}
-                        type="button"
-                        onClick={() => setCalcScale(scale.id as any)}
-                        className={`p-3 rounded-xl border text-left transition-all ${isSelected ? 'border-blue-500 bg-blue-500/10 text-blue-400 font-bold ring-1 ring-blue-500' : darkMode ? 'border-slate-800 bg-slate-950 text-slate-300 hover:border-slate-700' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300'}`}
-                      >
-                        <div className="text-xs font-semibold">{scale.label}</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">{scale.desc}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* 3. Add-on Modules */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-                  3. Key Modular Add-Ons
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                  {[
-                    { key: 'scopingEngine', label: 'Interactive Scoping Engine' },
-                    { key: 'authSecurity', label: 'Role-Based Auth & Security' },
-                    { key: 'aiOrchestration', label: 'Generative AI / Document Engine' },
-                    { key: 'analyticsGIS', label: 'Real-Time GIS / Spatial Analytics' },
-                    { key: 'multiRegion', label: 'Dual-Region Infrastructure (PK/US)' }
-                  ].map((addon) => (
-                    <label
-                      key={addon.key}
-                      className={`flex items-center gap-2.5 p-2.5 rounded-lg border cursor-pointer select-none transition-colors ${calcAddons[addon.key] ? 'border-cyan-500/50 bg-cyan-500/5 text-cyan-300' : darkMode ? 'border-slate-800 bg-slate-950 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600'}`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={calcAddons[addon.key]}
-                        onChange={(e) => setCalcAddons({ ...calcAddons, [addon.key]: e.target.checked })}
-                        className="rounded border-slate-700 text-cyan-500 focus:ring-cyan-400"
-                      />
-                      <span>{addon.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-
-            {/* Results Live Card */}
-            <div className={`lg:col-span-5 p-6 sm:p-8 rounded-2xl border space-y-6 ${darkMode ? 'bg-gradient-to-br from-slate-900 to-slate-950 border-cyan-500/30' : 'bg-white border-cyan-200 shadow-md'}`}>
-              <div className="flex items-center justify-between border-b pb-4 border-slate-800">
-                <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-bold">
-                  Calculated Forecast
-                </span>
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
-                  {calculatedEstimates.tier}
-                </span>
-              </div>
-
-              <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
-                  <div className="text-xs text-slate-400 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-blue-400" />
-                    <span>Estimated Delivery Timeline</span>
-                  </div>
-                  <div className="text-xl font-bold text-white font-mono">
-                    {calculatedEstimates.weeks}
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
-                  <div className="text-xs text-slate-400 flex items-center gap-1.5">
-                    <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Projected Conversion Lift</span>
-                  </div>
-                  <div className="text-xl font-bold text-cyan-400 font-mono">
-                    {calculatedEstimates.lift}
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1">
-                  <div className="text-xs text-slate-400 flex items-center gap-1.5">
-                    <Rocket className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Target ROI Multiplier</span>
-                  </div>
-                  <div className="text-xl font-bold text-amber-400 font-mono">
-                    {calculatedEstimates.roi}
-                  </div>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={transferCalculatorToContact}
-                className="w-full py-3 px-4 rounded-xl font-bold text-xs bg-gradient-to-r from-blue-600 via-cyan-500 to-indigo-600 hover:from-blue-500 hover:to-cyan-400 text-white shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2 hover:scale-[1.01]"
-              >
-                <span>Transfer Scope to Contact Form</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-              <p className="text-[11px] text-center text-slate-400">
-                Directly sends specifications to Daud for swift review.
-              </p>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ================= VERIFIED CAREER TIMELINE & EDUCATION ================= */}
-      <section id="experience" className="py-16 border-b border-slate-800/40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-            <div>
-              <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-500 mb-2">Career Journey</h2>
-              <h3 className="text-2xl sm:text-3xl font-bold">Verified Professional Experience</h3>
-            </div>
-            <p className={`text-sm mt-2 md:mt-0 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-              Authentic record from LinkedIn &amp; Corporate Dossier.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            {/* Professional Experience Column */}
-            <div className="lg:col-span-7 space-y-6">
-              <h4 className="text-sm font-semibold uppercase text-slate-400 tracking-wider flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-blue-400" />
-                <span>Industry Leadership &amp; Roles</span>
-              </h4>
-
-              <div className="space-y-6 border-l-2 border-slate-800 pl-6 ml-2">
-                {experiences.map((exp, idx) => (
-                  <div key={idx} className="relative group">
-                    <div className="absolute -left-[31px] top-1.5 w-3 h-3 rounded-full bg-cyan-400 ring-4 ring-slate-950"></div>
-                    <div className={`p-5 rounded-2xl border transition-all duration-300 hover:border-slate-700 ${darkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
+                return (
+                  <div
+                    key={door.id}
+                    onClick={() => setActiveDoorId(door.id)}
+                    onMouseEnter={() => setHoveredDoorId(door.id)}
+                    onMouseLeave={() => setHoveredDoorId(null)}
+                    className="door-container cursor-pointer relative group flex flex-col items-center"
+                  >
+                    {/* Arched Door Frame Outline */}
+                    <div className={`w-full aspect-[9/16] rounded-t-full p-2.5 border-2 transition-all duration-500 relative flex flex-col justify-end ${
+                      isOpen 
+                        ? 'border-amber-400 shadow-2xl shadow-amber-500/20 bg-slate-950' 
+                        : isHovered 
+                          ? 'border-cyan-500/70 bg-slate-900/60' 
+                          : 'border-slate-800 bg-slate-950/80 hover:border-slate-700'
+                    }`}>
                       
-                      <div className="flex flex-wrap justify-between items-start gap-2 mb-1.5">
-                        <div>
-                          <h5 className="font-bold text-base text-cyan-400">{exp.role}</h5>
-                          <div className="text-sm font-semibold text-slate-200">{exp.company}</div>
+                      {/* Interior Glowing Portal Chamber (Revealed when door swings) */}
+                      <div 
+                        className="absolute inset-2.5 rounded-t-full overflow-hidden flex items-center justify-center transition-opacity duration-700 pointer-events-none"
+                        style={{
+                          background: isOpen 
+                            ? `radial-gradient(ellipse at center, ${door.lightColor} 0%, rgba(15,23,42,0.95) 80%)` 
+                            : 'rgba(15,23,42,0.95)'
+                        }}
+                      >
+                        {/* Interior portal icon / light beam */}
+                        <div className={`transition-all duration-500 transform ${
+                          isOpen ? 'scale-100 opacity-100' : 'scale-50 opacity-20'
+                        }`}>
+                          <Sparkles className="w-8 h-8 text-amber-300 animate-pulse" />
                         </div>
-                        <span className="text-xs font-mono px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
-                          {exp.period}
-                        </span>
                       </div>
 
-                      <p className="text-xs text-slate-400 mb-3 flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                        <span>{exp.location}</span>
-                        <span className="text-slate-600">•</span>
-                        <span className="text-cyan-500 font-medium">{exp.type}</span>
-                      </p>
+                      {/* THE 3D DOOR LEAF (Hinged on the left side) */}
+                      <div 
+                        className={`door-leaf absolute inset-2.5 rounded-t-full border border-slate-700 shadow-2xl flex flex-col justify-between p-3 select-none bg-gradient-to-b ${door.doorColor} ${
+                          isOpen ? 'door-open' : isHovered ? 'rotate-[-22deg]' : 'rotate-0'
+                        }`}
+                        style={{
+                          boxShadow: isOpen ? '-12px 10px 25px rgba(0,0,0,0.8)' : undefined
+                        }}
+                      >
+                        {/* Door Arched Header Window / Molding */}
+                        <div className="w-full flex flex-col items-center pt-2">
+                          <div className="w-12 h-6 border-2 border-slate-700/80 rounded-t-full mb-1 flex items-center justify-center bg-slate-900/40">
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-600" />
+                          </div>
+                          
+                          {/* Brass Nameplate Plaque */}
+                          <div className={`w-full py-1 px-1 rounded border text-[9px] font-mono font-bold text-center tracking-tight truncate shadow-sm ${door.plaqueColor}`}>
+                            {door.title}
+                          </div>
+                        </div>
 
-                      <ul className="space-y-2 text-xs">
-                        {exp.bullets.map((b, i) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <span className="text-cyan-400 mt-1">•</span>
-                            <span className={darkMode ? 'text-slate-300 leading-relaxed' : 'text-slate-600 leading-relaxed'}>{b}</span>
-                          </li>
-                        ))}
-                      </ul>
+                        {/* Traditional Door Paneling (2 inset rectangles) */}
+                        <div className="space-y-2 my-auto w-full px-1">
+                          <div className="w-full h-10 rounded border border-slate-800/80 bg-slate-950/40 shadow-inner flex items-center justify-center">
+                            <span className="text-[10px] font-mono text-slate-500 font-bold">{door.doorNumber}</span>
+                          </div>
+                          <div className="w-full h-12 rounded border border-slate-800/80 bg-slate-950/40 shadow-inner" />
+                        </div>
+
+                        {/* Door Knob / Brass Handle (Right Edge) */}
+                        <div className="w-full flex justify-end pr-1 pb-4">
+                          <div className="w-3.5 h-3.5 rounded-full bg-gradient-to-tr from-amber-600 via-amber-400 to-amber-200 border border-amber-300 shadow-md shadow-amber-500/50 flex items-center justify-center">
+                            <div className="w-1 h-1 rounded-full bg-amber-900" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Door Bottom Label / Status */}
+                    <div className="mt-3 text-center">
+                      <span className={`text-xs font-semibold tracking-tight transition-colors ${
+                        isOpen ? 'text-amber-400 font-bold' : 'text-slate-400 group-hover:text-white'
+                      }`}>
+                        {door.doorNumber}. {door.title}
+                      </span>
+                      <p className="text-[10px] font-mono text-slate-400 mt-0.5">
+                        {isOpen ? '● Open & Inspecting' : 'Click to open'}
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
 
-            {/* Academic Credentials Column */}
-            <div className="lg:col-span-5 space-y-6">
-              <h4 className="text-sm font-semibold uppercase text-slate-400 tracking-wider flex items-center gap-2">
-                <GraduationCap className="w-4 h-4 text-cyan-400" />
-                <span>Education History</span>
-              </h4>
-
-              <div className="space-y-4">
-                {education.map((edu, idx) => (
-                  <div key={idx} className={`p-5 rounded-2xl border transition-all duration-300 ${darkMode ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-bold text-blue-400">{edu.grade}</span>
-                      <span className="text-xs font-mono text-slate-400">{edu.period}</span>
+            {/* The Expanded Inspection Stage (Right Column, Reel 00:05 - 00:10) */}
+            <div className="lg:col-span-7">
+              <div className={`rounded-3xl border p-6 sm:p-8 backdrop-blur-xl shadow-2xl transition-all duration-500 relative ${
+                darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'
+              }`}>
+                
+                {/* Header of Active Inspection Case */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-6 border-b border-slate-800/80">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/30">
+                        DOOR {activeDoor.doorNumber} UNLOCKED
+                      </span>
+                      <span className="text-xs font-mono text-slate-400">
+                        {activeDoor.category}
+                      </span>
                     </div>
-                    <h5 className="font-bold text-sm text-slate-100">{edu.degree}</h5>
-                    <div className="text-xs text-cyan-400 font-medium mt-0.5">{edu.institution}</div>
-                    <p className={`text-xs mt-2 leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                      {edu.details}
-                    </p>
+                    <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex items-center gap-2">
+                      {activeDoor.title}
+                    </h3>
                   </div>
-                ))}
 
-                {/* Dossier Quick Card */}
-                <div className={`p-5 rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-slate-900 to-cyan-950/20 text-xs space-y-3`}>
-                  <div className="flex items-center gap-2 text-cyan-400 font-bold">
-                    <FileCheck2 className="w-4 h-4" />
-                    <span>LinkedIn-Synchronized Dossier</span>
-                  </div>
-                  <p className="text-slate-300 leading-relaxed">
-                    All professional experience and academic grades reflect the complete high-DPI curriculum vitae generated directly from Daud's LinkedIn profile.
-                  </p>
                   <button
-                    onClick={() => setShowCvModal(true)}
-                    className="w-full py-2.5 rounded-xl font-bold text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-colors flex items-center justify-center gap-2"
+                    onClick={() => openWhatsApp(`Hi Daud, I am interested in discussing your project: ${activeDoor.title}`)}
+                    className="px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-colors flex items-center gap-1.5 shadow-sm"
                   >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>Inspect Full CV PDF Dossier</span>
+                    <WhatsAppIcon className="w-3.5 h-3.5" />
+                    <span>Inquire About Case</span>
                   </button>
                 </div>
 
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ================= PROJECTS SHOWCASE WITH SEARCH & FILTER ================= */}
-      <section id="projects" className={`py-16 border-b transition-colors ${darkMode ? 'border-slate-900 bg-slate-950/50' : 'border-slate-200 bg-slate-100/50'}`}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
-            <div>
-              <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-500 mb-2">Portfolio Showcase</h2>
-              <h3 className="text-2xl sm:text-3xl font-bold">Featured Works &amp; Initiatives</h3>
-            </div>
-
-            {/* Project Search Bar */}
-            <div className="relative w-full md:w-72">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search projects or tech..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-full pl-9 pr-4 py-2 rounded-xl text-xs border outline-none transition-colors ${darkMode ? 'bg-slate-900 border-slate-800 focus:border-cyan-500 text-slate-200' : 'bg-white border-slate-300 focus:border-cyan-500 text-slate-900'}`}
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Filter Tabs */}
-          <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
-            {[
-              { id: 'all', label: 'All Projects' },
-              { id: 'ai', label: 'AI & Automation' },
-              { id: 'web', label: 'Web Dev & Cloud' },
-              { id: 'marketing', label: 'Digital Growth & GEO' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-sm' : darkMode ? 'bg-slate-900 text-slate-400 hover:text-slate-200' : 'bg-white text-slate-600 hover:text-slate-900'}`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Project Cards Grid */}
-          {filteredProjects.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl border border-dashed border-slate-800 text-slate-400">
-              <Search className="w-8 h-8 mx-auto mb-2 text-slate-600" />
-              <p className="text-sm">No projects found matching "{searchQuery}".</p>
-              <button
-                onClick={() => { setSearchQuery(''); setActiveTab('all'); }}
-                className="mt-3 text-xs text-cyan-400 underline"
-              >
-                Reset search filters
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {filteredProjects.map((p) => (
-                <div
-                  key={p.id}
-                  className={`group rounded-2xl border p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 ${darkMode ? 'bg-slate-900/80 border-slate-800 hover:border-cyan-500/40' : 'bg-white border-slate-200 hover:border-cyan-500/40 shadow-sm'}`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded border ${p.id.includes('aeif') || p.id.includes('sabz') ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 font-bold' : p.id.includes('linkedin') ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 font-bold' : 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'}`}>
-                        {p.badge}
-                      </span>
-                      <span className="text-xs text-slate-500 font-mono">{p.categoryLabel}</span>
+                {/* Metrics Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-6">
+                  {activeDoor.metrics.map((m, idx) => (
+                    <div 
+                      key={idx}
+                      className={`p-3 rounded-xl border ${
+                        darkMode ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'
+                      }`}
+                    >
+                      <p className="text-[10px] font-mono uppercase tracking-wider text-slate-400">{m.label}</p>
+                      <p className="text-sm sm:text-base font-bold text-cyan-400 mt-0.5">{m.value}</p>
                     </div>
+                  ))}
+                </div>
 
-                    <h4 className="text-xl font-bold mb-2 group-hover:text-cyan-400 transition-colors">
-                      {p.title}
-                    </h4>
+                {/* Description and Checklist */}
+                <div className="space-y-4">
+                  <p className={`text-sm leading-relaxed ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                    {activeDoor.description}
+                  </p>
 
-                    <p className={`text-xs leading-relaxed mb-4 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                      {p.description}
+                  <div className="space-y-2 pt-1">
+                    <p className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-400">
+                      Architectural Highlights &amp; Scope:
                     </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {activeDoor.highlights.map((h, i) => (
+                        <div key={i} className="flex items-start gap-2 text-xs text-slate-300">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                          <span>{h}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-                    <div className="flex flex-wrap gap-1.5 mb-6">
-                      {p.techStack.map((tech, i) => (
-                        <span
-                          key={i}
-                          className={`text-[11px] px-2 py-0.5 rounded ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'}`}
+                  {/* Tech Stack Pills */}
+                  <div className="pt-2">
+                    <p className="text-xs font-mono uppercase tracking-wider text-slate-400 mb-2">
+                      Technologies &amp; Frameworks:
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {activeDoor.techStack.map((tech) => (
+                        <span 
+                          key={tech}
+                          className="px-2.5 py-1 rounded-md text-[11px] font-mono border border-slate-700 bg-slate-800/80 text-cyan-300"
                         >
                           {tech}
                         </span>
@@ -1346,585 +997,810 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-800/60">
+                  {/* INTERACTIVE DEVICE MOCKUP (Reel 00:07 - 00:10) */}
+                  <div className="mt-6 pt-6 border-t border-slate-800/80">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
+                        <Terminal className="w-3.5 h-3.5 text-cyan-400" />
+                        Live System Simulation Preview
+                      </span>
+                      <span className="text-[11px] font-mono text-emerald-400">● Status: Active</span>
+                    </div>
+
+                    {/* Mockup Frame */}
+                    <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs shadow-inner">
+                      {activeDoor.demoType === 'traffic' && (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between text-[11px] text-slate-400 pb-2 border-b border-slate-800">
+                            <span>SABZ_ENGINE_v4.2 // AEIF_SHOWDOWN_BUILD</span>
+                            <span className="text-amber-400 font-bold">5th Worldwide Rank</span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+                            <div className="p-2 rounded bg-slate-900 border border-slate-800">
+                              <span className="text-slate-500 block">Junction 01</span>
+                              <span className="text-emerald-400 font-bold text-xs">GREEN (48s)</span>
+                            </div>
+                            <div className="p-2 rounded bg-slate-900 border border-slate-800">
+                              <span className="text-slate-500 block">Emergency Priority</span>
+                              <span className="text-cyan-400 font-bold text-xs">AMBULANCE CLEAR</span>
+                            </div>
+                            <div className="p-2 rounded bg-slate-900 border border-slate-800">
+                              <span className="text-slate-500 block">Frame Rate</span>
+                              <span className="text-amber-400 font-bold text-xs">60 FPS Edge</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {activeDoor.demoType === 'resume' && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-[11px] text-slate-400 pb-2 border-b border-slate-800">
+                            <span>VECTOR_COMPILER // LINKEDIN_PROFILE_INGEST</span>
+                            <span className="text-cyan-400 font-bold">PDF DPI: 300 Vector</span>
+                          </div>
+                          <div className="flex items-center justify-between p-2 rounded bg-slate-900 border border-slate-800">
+                            <div className="flex items-center gap-2">
+                              <FileText className="w-4 h-4 text-cyan-400" />
+                              <span className="text-slate-200">Muhammad_Daud_Ali_Lashari_CV.pdf</span>
+                            </div>
+                            <button
+                              onClick={() => setDossierModalOpen(true)}
+                              className="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-bold"
+                            >
+                              Inspect PDF <Eye className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {activeDoor.demoType === 'zepra' && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-[11px] text-slate-400 pb-2 border-b border-slate-800">
+                            <span>ZEPRA_PRODUCTION // EDGE_CLUSTER_GLOBAL</span>
+                            <span className="text-emerald-400 font-bold">gozepra.tech</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-[10px]">
+                            <div className="p-2 rounded bg-slate-900 border border-slate-800 flex justify-between">
+                              <span className="text-slate-400">Response:</span>
+                              <span className="text-cyan-400 font-bold">78ms (Global CDN)</span>
+                            </div>
+                            <div className="p-2 rounded bg-slate-900 border border-slate-800 flex justify-between">
+                              <span className="text-slate-400">Security:</span>
+                              <span className="text-emerald-400 font-bold">TLS 1.3 Strict</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {activeDoor.demoType === 'agents' && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-[11px] text-slate-400 pb-2 border-b border-slate-800">
+                            <span>SWARM_ORCHESTRATOR // DAG_EXECUTION_GRAPH</span>
+                            <span className="text-purple-400 font-bold">3 Subagents Active</span>
+                          </div>
+                          <div className="space-y-1 text-[11px] text-slate-300">
+                            <p className="text-emerald-400">✔ Agent 1 [Planner]: Objective partitioned into 4 atomic goals</p>
+                            <p className="text-cyan-400">✔ Agent 2 [Researcher]: Vector similarity query returned 12 references</p>
+                            <p className="text-purple-400">⚡ Agent 3 [Synthesizer]: Verification test suite passing (100%)</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions Bar */}
+                  <div className="pt-4 flex flex-wrap items-center gap-3">
                     <button
-                      onClick={() => setSelectedProject(p)}
-                      className="text-xs font-medium text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+                      onClick={() => setDossierModalOpen(true)}
+                      className="px-4 py-2.5 rounded-xl text-xs font-semibold border border-slate-700 bg-slate-800 hover:bg-slate-700 text-white transition-colors flex items-center gap-2"
                     >
-                      <span>View Case Details</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
+                      <FileCheck2 className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>View in Full Dossier</span>
                     </button>
 
-                    <a
-                      href={p.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1"
+                    <button
+                      onClick={() => openWhatsApp(`Hi Daud, I want to discuss architectural scoping for ${activeDoor.title}`)}
+                      className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30 transition-colors flex items-center gap-2"
                     >
-                      <span>{p.actionText || 'Visit Platform'}</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>Schedule Technical Review</span>
+                    </button>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
-          )}
-
+          </div>
         </div>
       </section>
 
-      {/* ================= SKILLS MATRIX ================= */}
-      <section id="skills" className="py-16 border-b border-slate-800/40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      {/* SECTION 3: "LET'S GO BACK IN TIME" (Reel 00:11 - 00:14 Chronometer) */}
+      <section id="timeline" className="py-20 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="max-w-2xl mb-12">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-500 mb-2">Technical Matrix</h2>
-            <h3 className="text-2xl sm:text-3xl font-bold">Skills &amp; Strategic Capabilities</h3>
+          {/* Header */}
+          <div className="text-center max-w-2xl mx-auto space-y-3 mb-14">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 text-xs font-mono">
+              <Clock className="w-3.5 h-3.5" />
+              <span>CHRONOLOGICAL MILESTONES</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
+              Let's go back in time <span className="text-cyan-400">.</span>
+            </h2>
+            <p className={`text-base ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+              Scrub through the time machine to inspect verified milestones, leadership roles, and academic achievements.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {skillCategories.map((cat, idx) => (
-              <div
-                key={idx}
-                className={`p-6 rounded-2xl border transition-all duration-300 hover:border-slate-700 ${darkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  {cat.icon}
-                  <h4 className="font-bold text-base">{cat.title}</h4>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            {/* The Chronometer / Time Machine Graphic (Left, Reel Style) */}
+            <div className="lg:col-span-5 flex flex-col items-center">
+              <div className="relative w-72 h-72 sm:w-80 sm:h-80 flex items-center justify-center">
+                
+                {/* Rotating Outer Celestial Ring */}
+                <div className="absolute inset-0 rounded-full border border-dashed border-cyan-500/30 animate-spin-slow pointer-events-none" />
+                <div className="absolute inset-4 rounded-full border border-slate-800 pointer-events-none" />
+                
+                {/* Ambient Radial Flare */}
+                <div className="absolute inset-8 rounded-full bg-gradient-to-tr from-cyan-500/10 via-blue-600/10 to-indigo-600/15 blur-xl pointer-events-none" />
+
+                {/* Central Time Core */}
+                <div className="relative text-center z-10 space-y-1">
+                  <span className="text-[10px] font-mono tracking-widest uppercase text-slate-400 block">
+                    ERA ARCHIVE
+                  </span>
+                  <div className="text-5xl sm:text-6xl font-extrabold tracking-tighter bg-gradient-to-b from-white via-cyan-100 to-cyan-400 bg-clip-text text-transparent font-mono">
+                    {activeEra.year}
+                  </div>
+                  <span className="text-xs font-mono text-cyan-400 font-semibold block px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/30">
+                    {activeEra.period}
+                  </span>
+                </div>
+              </div>
+
+              {/* Scrubber & Player Controls (Reel 00:13 Style) */}
+              <div className={`mt-6 p-2 rounded-2xl border flex items-center gap-3 backdrop-blur-md shadow-lg ${
+                darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'
+              }`}>
+                {/* Prev Button */}
+                <button
+                  onClick={() => setSelectedEraIndex(prev => (prev - 1 + timelineEras.length) % timelineEras.length)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                  title="Previous Era"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                {/* Play / Pause Autoplay */}
+                <button
+                  onClick={() => setIsPlayingTimeline(prev => !prev)}
+                  className="p-2 rounded-xl bg-cyan-500 text-slate-950 hover:bg-cyan-400 transition-colors"
+                  title={isPlayingTimeline ? 'Pause Autoplay' : 'Autoplay Timeline'}
+                >
+                  {isPlayingTimeline ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+                </button>
+
+                {/* Next Button */}
+                <button
+                  onClick={() => setSelectedEraIndex(prev => (prev + 1) % timelineEras.length)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                  title="Next Era"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+
+                <div className="h-4 w-px bg-slate-800" />
+
+                {/* Index Indicator */}
+                <span className="text-xs font-mono text-slate-400 px-2">
+                  0{selectedEraIndex + 1} / 0{timelineEras.length}
+                </span>
+
+                {/* Year Selectors */}
+                <div className="flex items-center gap-1">
+                  {timelineEras.map((era, idx) => (
+                    <button
+                      key={era.year}
+                      onClick={() => setSelectedEraIndex(idx)}
+                      className={`px-2 py-1 rounded text-[11px] font-mono transition-colors ${
+                        selectedEraIndex === idx
+                          ? 'bg-cyan-500 text-slate-950 font-bold'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {era.year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Active Era Details Card (Right Column) */}
+            <div className="lg:col-span-7">
+              <div className={`rounded-3xl border p-6 sm:p-8 backdrop-blur-xl shadow-2xl transition-all duration-500 ${
+                darkMode ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200'
+              }`}>
+                <div className="space-y-2 pb-6 border-b border-slate-800/80">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                    <span className="text-xs font-mono text-cyan-400 uppercase tracking-wider font-semibold">
+                      {activeEra.period}
+                    </span>
+                  </div>
+                  <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                    {activeEra.role}
+                  </h3>
+                  <p className="text-sm font-medium text-slate-400">
+                    {activeEra.subtitle}
+                  </p>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {cat.skills.map((skill, sIdx) => (
-                    <span
-                      key={sIdx}
-                      className={`text-xs px-2.5 py-1.5 rounded-lg border font-medium ${darkMode ? 'bg-slate-800/70 border-slate-700/60 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-800'}`}
+                {/* Bullet Points */}
+                <div className="py-6 space-y-3">
+                  {activeEra.details.map((point, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                        <Check className="w-3 h-3 text-cyan-400" />
+                      </div>
+                      <p className={`text-sm leading-relaxed ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                        {point}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Skill Badges for Era */}
+                <div className="pt-4 border-t border-slate-800/80 flex flex-wrap gap-2">
+                  {activeEra.badges.map(b => (
+                    <span 
+                      key={b}
+                      className="px-3 py-1 rounded-lg text-xs font-mono border border-slate-700/80 bg-slate-950/60 text-slate-300"
                     >
-                      {skill}
+                      {b}
                     </span>
                   ))}
                 </div>
               </div>
-            ))}
+            </div>
           </div>
-
         </div>
       </section>
 
-      {/* ================= CONTACT & ADVISORY SECTION ================= */}
-      <section id="contact" className={`py-16 transition-colors ${darkMode ? 'bg-slate-950' : 'bg-white'}`}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            
-            {/* Left Contact Info */}
-            <div className="lg:col-span-5 space-y-6">
-              <div>
-                <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-500 mb-2">Direct Contact</h2>
-                <h3 className="text-2xl sm:text-3xl font-bold mb-4">Let's Connect &amp; Collaborate</h3>
-                <p className={`text-sm leading-relaxed ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                  Whether you require custom web architecture, AI pitch execution, GEO/AEO search authority, or B2B tech consulting, I am available for consultations and projects.
+      {/* SECTION 4: INTERACTIVE ESTIMATOR & SCOPING PREVIEW */}
+      <section className="py-16 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className={`rounded-3xl border p-8 sm:p-10 backdrop-blur-xl relative overflow-hidden ${
+            darkMode ? 'bg-gradient-to-r from-slate-900 via-slate-900/90 to-cyan-950/40 border-slate-800' : 'bg-slate-100 border-slate-200'
+          }`}>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              <div className="lg:col-span-8 space-y-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 text-xs font-mono">
+                  <Calculator className="w-3.5 h-3.5" />
+                  <span>INSTANT ARCHITECTURAL SCOPING</span>
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                  Need a scoped estimate for your AI or Web platform?
+                </h3>
+                <p className={`text-sm sm:text-base ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  Calculate real-world timelines, engineering velocity, and technical ROI based on Zepra Tech's proven development frameworks.
                 </p>
               </div>
 
-              <div className="space-y-4 text-sm">
-                
-                {/* WhatsApp Direct */}
-                <div className={`p-4 rounded-xl border flex items-center justify-between ${darkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center flex-shrink-0">
-                      <MessageSquare className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-slate-500">WhatsApp Direct</div>
-                      <a href="https://wa.me/923204154156" target="_blank" rel="noreferrer" className="font-semibold text-emerald-400 hover:underline text-xs sm:text-sm">
-                        +92 320 4154156
-                      </a>
-                    </div>
-                  </div>
-                  <a href="https://wa.me/923204154156" target="_blank" rel="noreferrer" className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white">
-                    Chat Now
-                  </a>
-                </div>
-
-                {/* Personal Email */}
-                <div className={`p-4 rounded-xl border flex items-center justify-between ${darkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center flex-shrink-0">
-                      <Mail className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-slate-500">Personal Email</div>
-                      <a href="mailto:daudlashari400@gmail.com" className="font-medium hover:text-cyan-400 transition-colors text-xs sm:text-sm">
-                        daudlashari400@gmail.com
-                      </a>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => copyToClipboard('daudlashari400@gmail.com', 'personal')}
-                    className="p-2 rounded-lg text-slate-400 hover:text-cyan-400 transition-colors"
-                    title="Copy Personal Email"
-                  >
-                    {copiedEmail === 'personal' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                  </button>
-                </div>
-
-                {/* Corporate Agency Email */}
-                <div className={`p-4 rounded-xl border flex items-center justify-between ${darkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center flex-shrink-0">
-                      <Globe className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-slate-500">Corporate Agency Email</div>
-                      <a href="mailto:daud.lashari@gozepra.tech" className="font-medium hover:text-cyan-400 transition-colors text-xs sm:text-sm">
-                        daud.lashari@gozepra.tech
-                      </a>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => copyToClipboard('daud.lashari@gozepra.tech', 'agency')}
-                    className="p-2 rounded-lg text-slate-400 hover:text-cyan-400 transition-colors"
-                    title="Copy Agency Email"
-                  >
-                    {copiedEmail === 'agency' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                  </button>
-                </div>
-
-                {/* Headquarters Location */}
-                <div className={`p-4 rounded-xl border flex items-center gap-3 ${darkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-                  <div className="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs text-slate-500">Offices &amp; Presence</div>
-                    <div className="font-medium text-xs">
-                      DHA Phase 8, Lahore, PK • Andover, MA, USA
-                    </div>
-                  </div>
-                </div>
-
+              <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-3 justify-end">
+                <button
+                  onClick={() => setEstimatorOpen(true)}
+                  className="px-6 py-3.5 rounded-xl font-semibold text-xs sm:text-sm bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20"
+                >
+                  <Calculator className="w-4 h-4" />
+                  <span>Launch ROI Calculator</span>
+                </button>
+                <button
+                  onClick={() => openWhatsApp('Hi Daud, I would like to get a scoping estimate for our software project.')}
+                  className={`px-6 py-3.5 rounded-xl font-semibold text-xs sm:text-sm border transition-all flex items-center justify-center gap-2 ${
+                    darkMode ? 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50'
+                  }`}
+                >
+                  <WhatsAppIcon className="w-4 h-4" />
+                  <span>Direct Technical Briefing</span>
+                </button>
               </div>
             </div>
-
-            {/* Right Contact Form */}
-            <div className="lg:col-span-7">
-              <div className={`p-6 sm:p-8 rounded-2xl border ${darkMode ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-                <h4 className="text-lg font-bold mb-4">Send a Direct Inquiry</h4>
-
-                {formStatus === 'success' ? (
-                  <div className="p-6 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-center space-y-2">
-                    <CheckCircle2 className="w-8 h-8 mx-auto text-emerald-400" />
-                    <h5 className="font-bold text-base">Message Transmitted!</h5>
-                    <p className="text-xs text-emerald-300">
-                      Thank you for getting in touch. Muhammad Daud Ali Lashari will respond to your email promptly.
-                    </p>
-                    <button
-                      onClick={() => setFormStatus(null)}
-                      className="mt-4 px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500"
-                    >
-                      Send Another Message
-                    </button>
-                  </div>
-                ) : (
-                  <form onSubmit={handleContactSubmit} className="space-y-4 text-xs">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block mb-1.5 font-medium text-slate-400">Your Name</label>
-                        <input
-                          type="text"
-                          required
-                          value={contactName}
-                          onChange={(e) => setContactName(e.target.value)}
-                          placeholder="Full Name"
-                          className={`w-full px-3 py-2.5 rounded-lg border outline-none transition-colors ${darkMode ? 'bg-slate-950 border-slate-800 focus:border-cyan-500 text-slate-100' : 'bg-white border-slate-300 focus:border-cyan-500 text-slate-900'}`}
-                        />
-                      </div>
-                      <div>
-                        <label className="block mb-1.5 font-medium text-slate-400">Email Address</label>
-                        <input
-                          type="email"
-                          required
-                          value={contactEmail}
-                          onChange={(e) => setContactEmail(e.target.value)}
-                          placeholder="email@domain.com"
-                          className={`w-full px-3 py-2.5 rounded-lg border outline-none transition-colors ${darkMode ? 'bg-slate-950 border-slate-800 focus:border-cyan-500 text-slate-100' : 'bg-white border-slate-300 focus:border-cyan-500 text-slate-900'}`}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block mb-1.5 font-medium text-slate-400">Subject / Category</label>
-                      <input
-                        type="text"
-                        required
-                        value={contactSubject}
-                        onChange={(e) => setContactSubject(e.target.value)}
-                        placeholder="Web Engineering / AI Solution / Performance Growth"
-                        className={`w-full px-3 py-2.5 rounded-lg border outline-none transition-colors ${darkMode ? 'bg-slate-950 border-slate-800 focus:border-cyan-500 text-slate-100' : 'bg-white border-slate-300 focus:border-cyan-500 text-slate-900'}`}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block mb-1.5 font-medium text-slate-400">Message</label>
-                      <textarea
-                        rows={4}
-                        required
-                        value={contactMessage}
-                        onChange={(e) => setContactMessage(e.target.value)}
-                        placeholder="Detail your inquiry or project scope..."
-                        className={`w-full px-3 py-2.5 rounded-lg border outline-none transition-colors ${darkMode ? 'bg-slate-950 border-slate-800 focus:border-cyan-500 text-slate-100' : 'bg-white border-slate-300 focus:border-cyan-500 text-slate-900'}`}
-                      ></textarea>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={formStatus === 'sending'}
-                      className="w-full py-3 rounded-lg font-bold text-xs bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white shadow-md transition-all flex items-center justify-center gap-2 hover:scale-[1.01]"
-                    >
-                      {formStatus === 'sending' ? (
-                        <span>Sending Message...</span>
-                      ) : (
-                        <>
-                          <Send className="w-3.5 h-3.5" />
-                          <span>Transmit Direct Message</span>
-                        </>
-                      )}
-                    </button>
-                  </form>
-                )}
-              </div>
-            </div>
-
           </div>
         </div>
       </section>
 
-      {/* ================= FOOTER ================= */}
-      <footer className={`py-8 border-t text-xs transition-colors ${darkMode ? 'border-slate-900 bg-slate-950 text-slate-500' : 'border-slate-200 bg-slate-100 text-slate-600'}`}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            © {new Date().getFullYear()} Muhammad Daud Ali Lashari. CEO &amp; Founder at Zepra Tech.
+      {/* SECTION 5: "GOT A PROJECT? LET'S BUILD IT TOGETHER." (Reel 00:15 Flex Footer) */}
+      <footer id="contact" className={`pt-20 pb-12 border-t relative ${
+        darkMode ? 'bg-[#070a12] border-slate-800/80 text-slate-300' : 'bg-white border-slate-200 text-slate-700'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Main Punchy Hero CTA from Reel */}
+          <div className="space-y-6 max-w-4xl pb-16 border-b border-slate-800/80">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-xs font-mono">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span>AVAILABLE FOR NEW WORK</span>
+            </div>
+
+            <h2 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white leading-[1.05]">
+              Got a project? <br />
+              <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                Let's build it together.
+              </span>
+            </h2>
+
+            <p className="text-base sm:text-lg text-slate-400 max-w-2xl leading-relaxed">
+              I'm taking on select high-impact client builds, AI architecture design, and enterprise web solutions. 
+              Drop a message and I'll get back to you within a few hours.
+            </p>
+
+            {/* Reel CTA Buttons: [Let's talk ↗] and [See my work] */}
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <button
+                onClick={() => setContactModalOpen(true)}
+                className="px-8 py-4 rounded-xl font-bold text-sm bg-white text-slate-950 hover:bg-slate-200 transition-all shadow-xl flex items-center gap-2 transform active:scale-95"
+              >
+                <span>Let's talk</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <a
+                href="#doors"
+                className={`px-8 py-4 rounded-xl font-bold text-sm border transition-all flex items-center gap-2 ${
+                  darkMode ? 'border-slate-700 hover:border-slate-500 text-white' : 'border-slate-300 hover:border-slate-400 text-slate-900'
+                }`}
+              >
+                <span>See my work</span>
+              </a>
+
+              <button
+                onClick={() => setDossierModalOpen(true)}
+                className="px-6 py-4 rounded-xl font-mono text-xs text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 bg-cyan-950/20 hover:bg-cyan-900/30 transition-all flex items-center gap-2"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Executive CV Dossier (PDF)</span>
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <a href="https://gozepra.tech" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400 transition-colors">gozepra.tech</a>
-            <span>•</span>
-            <a href="https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400 transition-colors">LinkedIn Profile</a>
-            <span>•</span>
-            <a href="https://wa.me/923204154156" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">WhatsApp</a>
-            <span>•</span>
-            <a href="#hero" className="hover:text-cyan-400 transition-colors">Back to top ↑</a>
+
+          {/* 4-Column Directory Layout */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-12 text-xs">
+            
+            {/* Column 1: Services */}
+            <div className="space-y-3">
+              <p className="font-mono uppercase tracking-wider text-slate-400 font-semibold text-[11px]">
+                Engineering Focus
+              </p>
+              <ul className="space-y-2 text-slate-300">
+                <li className="hover:text-cyan-400 transition-colors">AI &amp; Computer Vision Systems</li>
+                <li className="hover:text-cyan-400 transition-colors">Full-Stack Web Architectures</li>
+                <li className="hover:text-cyan-400 transition-colors">Autonomous Multi-Agent Swarms</li>
+                <li className="hover:text-cyan-400 transition-colors">Vector Document Engines</li>
+                <li className="hover:text-cyan-400 transition-colors">Enterprise React &amp; Next.js 15</li>
+              </ul>
+            </div>
+
+            {/* Column 2: Navigation */}
+            <div className="space-y-3">
+              <p className="font-mono uppercase tracking-wider text-slate-400 font-semibold text-[11px]">
+                Quick Navigation
+              </p>
+              <ul className="space-y-2 text-slate-300">
+                <li><a href="#hero" className="hover:text-cyan-400 transition-colors">Home Portal</a></li>
+                <li><a href="#doors" className="hover:text-cyan-400 transition-colors">The Doors (Flagship Cases)</a></li>
+                <li><a href="#timeline" className="hover:text-cyan-400 transition-colors">Back In Time (Timeline)</a></li>
+                <li><button onClick={() => setEstimatorOpen(true)} className="hover:text-cyan-400 transition-colors">ROI Calculator</button></li>
+                <li><button onClick={() => setDossierModalOpen(true)} className="hover:text-cyan-400 transition-colors">Executive PDF Dossier</button></li>
+              </ul>
+            </div>
+
+            {/* Column 3: Location & Time */}
+            <div className="space-y-3">
+              <p className="font-mono uppercase tracking-wider text-slate-400 font-semibold text-[11px]">
+                Availability &amp; Location
+              </p>
+              <div className="space-y-1.5 text-slate-300">
+                <p className="flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-cyan-400" /> Multan, Punjab, Pakistan
+                </p>
+                <p className="font-mono text-cyan-400 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-amber-400" /> Local Time: {pktTime || '01:25 AM PKT'}
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  Remote Worldwide Ready (UTC+5)
+                </p>
+                <p className="text-[11px] text-emerald-400 font-semibold">
+                  Status: Open for High-Impact Roles
+                </p>
+              </div>
+            </div>
+
+            {/* Column 4: Verified Social & Direct */}
+            <div className="space-y-3">
+              <p className="font-mono uppercase tracking-wider text-slate-400 font-semibold text-[11px]">
+                Verified Records
+              </p>
+              <ul className="space-y-2 text-slate-300">
+                <li>
+                  <a 
+                    href="https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
+                  >
+                    <Linkedin className="w-3.5 h-3.5 text-cyan-400" /> LinkedIn Profile
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="https://github.com/ecomwithdaud-hub"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
+                  >
+                    <Code2 className="w-3.5 h-3.5 text-slate-300" /> GitHub Repository
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="https://gozepra.tech"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
+                  >
+                    <Globe className="w-3.5 h-3.5 text-emerald-400" /> Zepra Tech (gozepra.tech)
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="mailto:daudlashari39@gmail.com"
+                    className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-amber-400" /> daudlashari39@gmail.com
+                  </a>
+                </li>
+                <li>
+                  <button 
+                    onClick={() => openWhatsApp()}
+                    className="hover:text-emerald-400 transition-colors flex items-center gap-1.5"
+                  >
+                    <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" /> +92 328 6673627
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Copyright & Disclaimer Bar */}
+          <div className="pt-8 border-t border-slate-800/60 flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-slate-500 gap-4">
+            <p>© {new Date().getFullYear()} Muhammad Daud Ali Lashari. All engineering rights reserved.</p>
+            <p className="flex items-center gap-2">
+              <span>Synchronized with LinkedIn &amp; Executive Dossier Engine</span>
+              <span>•</span>
+              <span className="text-cyan-400">Vercel Ready</span>
+            </p>
           </div>
         </div>
       </footer>
 
-      {/* ================= COMMAND PALETTE (CTRL+K / CMD+K) ================= */}
-      {commandPaletteOpen && (
-        <div 
-          id="command-palette-backdrop"
-          className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-slate-950/80 backdrop-blur-md animate-fade-in"
-          onClick={() => setCommandPaletteOpen(false)}
-        >
-          <div 
-            className={`relative w-full max-w-xl rounded-2xl border shadow-2xl overflow-hidden ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'}`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center px-4 py-3 border-b border-slate-800">
-              <Search className="w-4 h-4 text-cyan-400 mr-3" />
-              <input
-                type="text"
-                autoFocus
-                placeholder="Type a command or jump to section..."
-                value={paletteSearch}
-                onChange={(e) => setPaletteSearch(e.target.value)}
-                className="w-full bg-transparent outline-none text-sm placeholder:text-slate-500"
-              />
-              <button 
-                onClick={() => setCommandPaletteOpen(false)}
-                className="p-1 rounded text-slate-500 hover:text-slate-300"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="max-h-72 overflow-y-auto p-2 space-y-1 text-xs">
-              {filteredPaletteItems.length === 0 ? (
-                <div className="p-4 text-center text-slate-500">
-                  No matching commands found.
-                </div>
-              ) : (
-                filteredPaletteItems.map((item, idx) => (
-                  <button
-                    key={idx}
-                    onClick={item.action}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between transition-colors ${darkMode ? 'hover:bg-slate-800 text-slate-200' : 'hover:bg-slate-100 text-slate-800'}`}
-                  >
-                    <span>{item.title}</span>
-                    <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">
-                      {item.category}
-                    </span>
-                  </button>
-                ))
-              )}
-            </div>
-
-            <div className="px-4 py-2 border-t border-slate-800/60 bg-slate-950/50 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-              <span>Navigation: Click or Enter</span>
-              <span>Press ESC to close</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ================= PROJECT DETAIL DRAWER ================= */}
-      {selectedProject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className={`relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl p-6 border shadow-2xl ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'}`}>
+      {/* MODAL 1: EXECUTIVE DOSSIER / VERIFIED CV VIEWER */}
+      {dossierModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+          <div className={`relative w-full max-w-4xl max-h-[92vh] rounded-3xl border shadow-2xl flex flex-col overflow-hidden ${
+            darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+          }`}>
             
-            <button
-              onClick={() => setSelectedProject(null)}
-              className="absolute top-4 right-4 p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <span className="text-xs font-semibold px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-              {selectedProject.badge}
-            </span>
-
-            <h3 className="text-2xl font-bold mt-3 mb-2">{selectedProject.title}</h3>
-            <p className="text-xs text-slate-400 font-mono mb-4">{selectedProject.categoryLabel}</p>
-
-            <div className="space-y-4 text-xs leading-relaxed mb-6">
-              <p className={darkMode ? 'text-slate-300' : 'text-slate-700'}>
-                {selectedProject.longDescription}
-              </p>
-
-              <div>
-                <h5 className="font-bold text-sm mb-2 text-cyan-400">Key Highlights &amp; Metrics</h5>
-                <ul className="space-y-1.5">
-                  {selectedProject.metrics.map((m: string, i: number) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                      <span>{m}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <h5 className="font-bold text-sm mb-2 text-cyan-400">Core Technologies &amp; Methodologies</h5>
-                <div className="flex flex-wrap gap-2">
-                  {selectedProject.techStack.map((tech: string, i: number) => (
-                    <span key={i} className="px-2.5 py-1 rounded bg-slate-800 text-slate-200 border border-slate-700">
-                      {tech}
-                    </span>
-                  ))}
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-cyan-400" />
                 </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-              <button
-                onClick={() => setSelectedProject(null)}
-                className="px-4 py-2 rounded-lg text-xs font-medium border border-slate-700 hover:bg-slate-800"
-              >
-                Close
-              </button>
-              <a
-                href={selectedProject.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 rounded-lg text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-950 flex items-center gap-1.5"
-              >
-                <span>{selectedProject.actionText || 'Visit Platform'}</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-
-          </div>
-        </div>
-      )}
-
-      {/* ================= INTERACTIVE EXECUTIVE CV & DOSSIER MODAL ================= */}
-      {showCvModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in overflow-y-auto">
-          <div className={`relative w-full max-w-4xl my-8 rounded-2xl p-6 sm:p-8 border shadow-2xl print-page ${darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'}`}>
-            
-            {/* Modal Controls (Hidden in Print) */}
-            <div className="flex flex-wrap items-center justify-between border-b pb-4 mb-6 border-slate-800 gap-3 no-print">
-              <div className="flex items-center gap-2.5">
-                <FileCheck2 className="w-5 h-5 text-cyan-400" />
                 <div>
-                  <h4 className="font-bold text-base">Executive Curriculum Vitae Dossier</h4>
-                  <p className="text-[11px] text-slate-400">Generated directly from verified LinkedIn data &amp; credentials</p>
+                  <h4 className="text-sm font-bold text-white">Executive Curriculum Vitae &amp; Dossier</h4>
+                  <p className="text-[11px] text-slate-400 font-mono">
+                    2.2 MB High-DPI Vector Document • Verified LinkedIn Source
+                  </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                {/* Mode Selector */}
-                <div className="flex rounded-lg border border-slate-800 p-0.5 bg-slate-950 text-xs">
-                  <button
-                    onClick={() => setCvViewMode('preview')}
-                    className={`px-3 py-1 rounded-md font-medium transition-colors ${cvViewMode === 'preview' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'}`}
-                  >
-                    Visual Preview
-                  </button>
-                  <button
-                    onClick={() => setCvViewMode('text')}
-                    className={`px-3 py-1 rounded-md font-medium transition-colors ${cvViewMode === 'text' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'}`}
-                  >
-                    Text Outline
-                  </button>
-                </div>
-
                 <a
-                  href={cvPdfPath}
+                  href="/Muhammad_Daud_Ali_Lashari_CV.pdf"
                   download="Muhammad_Daud_Ali_Lashari_CV.pdf"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-sm"
-                  title="Download High-DPI PDF"
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-colors flex items-center gap-1.5 shadow-sm"
                 >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download PDF (2.2 MB)</span>
+                  <Download className="w-3.5 h-3.5" /> Download PDF
                 </a>
-
                 <button
-                  onClick={() => window.print()}
-                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200"
+                  onClick={() => setDossierModalOpen(false)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
                 >
-                  <Printer className="w-3.5 h-3.5" />
-                  <span>Print</span>
-                </button>
-
-                <button
-                  onClick={() => setShowCvModal(false)}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
-                >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Modal Body */}
-            {cvViewMode === 'preview' ? (
-              <div className="space-y-4">
-                <div className="rounded-xl overflow-hidden border border-slate-800 bg-slate-950/60 max-h-[70vh] overflow-y-auto shadow-inner p-2">
-                  <img
-                    src={cvPreviewImg}
-                    alt="Muhammad Daud Ali Lashari - Complete Multi-Page Executive CV Preview"
-                    className="w-full h-auto rounded-lg shadow-lg"
-                  />
-                </div>
-                <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-800/60">
-                  <span>Full high-density vector document rendered from LinkedIn extraction</span>
-                  <a
-                    href={cvPdfPath}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-cyan-400 hover:underline flex items-center gap-1 font-semibold"
-                  >
-                    <span>Open Native PDF in New Tab</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6 text-xs text-slate-300 max-h-[70vh] overflow-y-auto pr-2">
-                {/* Header */}
-                <div className="border-b border-slate-800 pb-4">
-                  <h2 className="text-2xl font-bold text-white tracking-tight">MUHAMMAD DAUD ALI LASHARI</h2>
-                  <p className="text-cyan-400 font-semibold text-sm mt-0.5">
-                    Founder &amp; CEO | AI Systems &amp; Full-Stack Architect | Hands-On Digital Marketer
-                  </p>
-                  <div className="flex flex-wrap gap-4 text-xs text-slate-400 mt-2 font-mono">
-                    <span>Lahore, Pakistan</span>
-                    <span>•</span>
-                    <a href="https://wa.me/923204154156" className="text-emerald-400 hover:underline">+92 320 4154156</a>
-                    <span>•</span>
-                    <a href="mailto:daudlashari400@gmail.com" className="hover:text-cyan-400">daudlashari400@gmail.com</a>
-                    <span>•</span>
-                    <a href="mailto:daud.lashari@gozepra.tech" className="hover:text-cyan-400">daud.lashari@gozepra.tech</a>
-                  </div>
-                </div>
-
-                {/* Profile Summary */}
-                <div>
-                  <h5 className="font-bold text-sm uppercase tracking-wider text-cyan-400 mb-1.5">Executive Summary</h5>
-                  <p className="leading-relaxed">
-                    Tech entrepreneur and systems architect with proven execution across full-stack web platforms, client ROI forecasting algorithms, and Next-Gen search strategies (GEO/AEO). Recognized as a Top 5 Finalist worldwide (out of 400+ teams) at the 4th International AEIF Foundation AI Showdown 2026 at FAST University for SABZ AI Traffic System. Currently pursuing BS Computer Science (Grade A) at Lahore Garrison University while directing client deployments at Zepra Tech.
-                  </p>
-                </div>
-
-                {/* Verified Roles */}
-                <div>
-                  <h5 className="font-bold text-sm uppercase tracking-wider text-cyan-400 mb-2 flex items-center gap-1.5">
-                    <Briefcase className="w-4 h-4" /> Professional Roles from LinkedIn
-                  </h5>
-                  <div className="space-y-3">
-                    {experiences.map((exp, i) => (
-                      <div key={i} className="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
-                        <div className="flex justify-between items-start font-bold text-white">
-                          <span>{exp.role} — {exp.company}</span>
-                          <span className="font-mono text-xs text-slate-400 font-normal">{exp.period}</span>
-                        </div>
-                        <p className="text-slate-400 text-[11px] mt-0.5">{exp.location}</p>
-                        <ul className="list-disc list-inside mt-2 space-y-1 text-slate-300">
-                          {exp.bullets.map((b, bi) => (
-                            <li key={bi}>{b}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Education */}
-                <div>
-                  <h5 className="font-bold text-sm uppercase tracking-wider text-cyan-400 mb-2 flex items-center gap-1.5">
-                    <GraduationCap className="w-4 h-4" /> Academic Credentials
-                  </h5>
-                  <div className="space-y-2">
-                    {education.map((edu, i) => (
-                      <div key={i} className="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
-                        <div className="flex justify-between items-center font-bold text-white">
-                          <span>{edu.degree} — {edu.institution}</span>
-                          <span className="font-mono text-cyan-400 text-xs">{edu.grade}</span>
-                        </div>
-                        <p className="text-slate-400 text-[11px] mt-0.5">{edu.period}</p>
-                        <p className="text-slate-300 mt-1">{edu.details}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-            )}
-
-            {/* Modal Footer (Hidden in Print) */}
-            <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between no-print">
-              <span className="text-[11px] text-slate-500 font-mono">
-                Click Download PDF to obtain the full high-resolution document.
-              </span>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowCvModal(false)}
-                  className="px-4 py-2 rounded-lg text-xs font-medium border border-slate-700 hover:bg-slate-800"
-                >
-                  Close
-                </button>
-                <a
-                  href={cvPdfPath}
-                  download="Muhammad_Daud_Ali_Lashari_CV.pdf"
-                  className="px-4 py-2 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 shadow-sm"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download PDF</span>
-                </a>
+            {/* Preview Body */}
+            <div className="flex-1 overflow-y-auto p-6 bg-slate-950/60 flex flex-col items-center">
+              <div className="relative max-w-2xl w-full rounded-2xl overflow-hidden shadow-2xl border border-slate-800 bg-white">
+                <img
+                  src="/cv_full_preview.png"
+                  alt="Muhammad Daud Ali Lashari Verified CV Dossier"
+                  className="w-full h-auto object-contain"
+                />
               </div>
             </div>
 
+            {/* Footer */}
+            <div className="px-6 py-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
+              <span>Status: Authenticated Record</span>
+              <button
+                onClick={() => openWhatsApp('Hi Daud, I reviewed your CV dossier and would like to discuss a role.')}
+                className="text-cyan-400 hover:underline flex items-center gap-1"
+              >
+                Inquire via WhatsApp <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
           </div>
         </div>
       )}
 
+      {/* MODAL 2: INTERACTIVE ROI & SCOPING CALCULATOR */}
+      {estimatorOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+          <div className={`relative w-full max-w-2xl rounded-3xl border shadow-2xl p-6 sm:p-8 ${
+            darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
+          }`}>
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                  <Calculator className="w-4 h-4 text-cyan-400" />
+                </div>
+                <div>
+                  <h4 className="text-base font-bold">Project Scope &amp; ROI Estimator</h4>
+                  <p className="text-xs text-slate-400">Zepra Tech Engineering Delivery Framework</p>
+                </div>
+              </div>
+              <button onClick={() => setEstimatorOpen(false)} className="text-slate-400 hover:text-white p-1.5">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="py-6 space-y-6">
+              {/* Scope Choice */}
+              <div>
+                <label className="text-xs font-mono uppercase tracking-wider text-slate-400 block mb-2">
+                  Project Type &amp; Scale
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'mvp', title: 'Modern MVP', desc: 'React + Full-Stack App' },
+                    { id: 'ai', title: 'AI System', desc: 'Computer Vision / Agents' },
+                    { id: 'enterprise', title: 'Enterprise Suite', desc: 'High-Concurrency System' }
+                  ].map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => setProjectType(t.id as any)}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        projectType === t.id
+                          ? 'border-cyan-400 bg-cyan-500/10 text-white shadow-sm'
+                          : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700'
+                      }`}
+                    >
+                      <p className="text-xs font-bold text-white">{t.title}</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">{t.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Delivery Speed */}
+              <div>
+                <label className="text-xs font-mono uppercase tracking-wider text-slate-400 block mb-2">
+                  Delivery Cadence
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setSpeed('accelerated')}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      speed === 'accelerated'
+                        ? 'border-amber-400 bg-amber-500/10 text-white'
+                        : 'border-slate-800 bg-slate-950/60 text-slate-400'
+                    }`}
+                  >
+                    <p className="text-xs font-bold text-amber-300">⚡ Sprint Accelerated</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">High-priority dedicated cycle</p>
+                  </button>
+                  <button
+                    onClick={() => setSpeed('standard')}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      speed === 'standard'
+                        ? 'border-cyan-400 bg-cyan-500/10 text-white'
+                        : 'border-slate-800 bg-slate-950/60 text-slate-400'
+                    }`}
+                  >
+                    <p className="text-xs font-bold text-cyan-300">Standard Production</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Standard milestone iteration</p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Calculated Outputs */}
+              <div className="p-4 rounded-2xl border border-cyan-500/30 bg-cyan-950/30 grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[11px] font-mono text-slate-400 uppercase">Estimated Delivery</p>
+                  <p className="text-2xl font-extrabold text-cyan-400 mt-0.5">~{estimatedTimeline} Weeks</p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-mono text-slate-400 uppercase">Target Velocity / ROI</p>
+                  <p className="text-sm font-bold text-emerald-400 mt-1">{estimatedROI}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+              <span className="text-xs text-slate-400 font-mono">100% Free Discovery Assessment</span>
+              <button
+                onClick={() => openWhatsApp(`Hi Daud, I ran your ROI Estimator for a ${projectType.toUpperCase()} project (~${estimatedTimeline} weeks) and want to discuss.`)}
+                className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-colors flex items-center gap-2"
+              >
+                <WhatsAppIcon className="w-4 h-4" />
+                <span>Confirm Scope on WhatsApp</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: CONTACT & BOOKING DRAWER */}
+      {contactModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
+          <div className={`relative w-full max-w-lg rounded-3xl border shadow-2xl p-6 sm:p-8 ${
+            darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
+          }`}>
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div>
+                <h4 className="text-lg font-bold text-white">Start a Conversation</h4>
+                <p className="text-xs text-slate-400">Direct response within 2-4 hours</p>
+              </div>
+              <button onClick={() => setContactModalOpen(false)} className="text-slate-400 hover:text-white p-1.5">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {contactSent ? (
+              <div className="py-12 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto">
+                  <Check className="w-6 h-6" />
+                </div>
+                <h5 className="text-base font-bold text-white">Message Dispatched!</h5>
+                <p className="text-xs text-slate-400">Thank you! Daud will review your message shortly.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleContactSubmit} className="py-6 space-y-4">
+                <div>
+                  <label className="text-xs font-mono uppercase tracking-wider text-slate-400 block mb-1">
+                    Your Email or Organization
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    placeholder="e.g. alex@company.com"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-950 text-slate-100 text-xs focus:outline-none focus:border-cyan-400 transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-mono uppercase tracking-wider text-slate-400 block mb-1">
+                    Project Brief or Role Details
+                  </label>
+                  <textarea
+                    rows={4}
+                    required
+                    value={contactMessage}
+                    onChange={(e) => setContactMessage(e.target.value)}
+                    placeholder="Briefly describe what you'd like to build or discuss..."
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-950 text-slate-100 text-xs focus:outline-none focus:border-cyan-400 transition-colors"
+                  />
+                </div>
+
+                <div className="pt-2 flex flex-col gap-2.5">
+                  <button
+                    type="submit"
+                    className="w-full py-3 rounded-xl font-bold text-xs bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Send className="w-3.5 h-3.5" /> Send Message
+                  </button>
+
+                  <div className="relative text-center my-1">
+                    <span className="text-[10px] font-mono uppercase text-slate-500 bg-slate-900 px-2 relative z-10">
+                      OR DIRECT INSTANT CHAT
+                    </span>
+                    <div className="absolute inset-y-1/2 left-0 right-0 h-px bg-slate-800" />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => openWhatsApp(contactMessage ? `Hi Daud, from ${contactEmail}: ${contactMessage}` : undefined)}
+                    className="w-full py-3 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white transition-colors flex items-center justify-center gap-2"
+                  >
+                    <WhatsAppIcon className="w-4 h-4" /> Message Directly on WhatsApp
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <div className="pt-4 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400 font-mono">
+              <span>📍 Multan, PK (UTC+5)</span>
+              <span>⚡ Typical reply: &lt; 2 hrs</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: COMMAND PALETTE (Ctrl+K / Cmd+K) */}
+      {commandPaletteOpen && (
+        <div 
+          onClick={() => setCommandPaletteOpen(false)}
+          className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-slate-950/80 backdrop-blur-md"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className={`w-full max-w-xl rounded-2xl border shadow-2xl overflow-hidden ${
+              darkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
+            }`}
+          >
+            <div className="p-3 border-b border-slate-800 flex items-center gap-3">
+              <Command className="w-4 h-4 text-cyan-400" />
+              <input
+                autoFocus
+                type="text"
+                placeholder="Type a command or jump to section..."
+                className="w-full bg-transparent text-sm focus:outline-none placeholder:text-slate-500"
+              />
+              <button 
+                onClick={() => setCommandPaletteOpen(false)}
+                className="text-xs font-mono text-slate-500 hover:text-white px-2 py-0.5 rounded bg-slate-800"
+              >
+                ESC
+              </button>
+            </div>
+
+            <div className="p-2 space-y-1 text-xs">
+              {[
+                { title: 'The Doors (Flagship Projects)', href: '#doors', icon: Sparkles },
+                { title: 'Back In Time (Timeline & Experience)', href: '#timeline', icon: Clock },
+                { title: 'Launch ROI & Scope Calculator', action: () => { setCommandPaletteOpen(false); setEstimatorOpen(true); }, icon: Calculator },
+                { title: 'Download Executive CV Dossier (PDF)', action: () => { setCommandPaletteOpen(false); setDossierModalOpen(true); }, icon: Download },
+                { title: 'Open LinkedIn Profile', action: () => window.open('https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/', '_blank'), icon: Globe },
+                { title: 'Open GitHub Profile', action: () => window.open('https://github.com/ecomwithdaud-hub', '_blank'), icon: Code2 },
+                { title: 'Chat via WhatsApp (+92 328 6673627)', action: () => openWhatsApp(), icon: Phone }
+              ].map((cmd, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    if (cmd.action) cmd.action();
+                    else if (cmd.href) {
+                      setCommandPaletteOpen(false);
+                      window.location.hash = cmd.href;
+                    }
+                  }}
+                  className="w-full text-left p-2.5 rounded-xl hover:bg-cyan-500/10 hover:text-cyan-400 flex items-center justify-between transition-colors"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <cmd.icon className="w-4 h-4 text-slate-400" />
+                    <span>{cmd.title}</span>
+                  </div>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

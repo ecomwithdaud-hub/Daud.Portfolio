@@ -66,6 +66,44 @@
   animation: pulse-glow 8s ease-in-out infinite;
 }
 
+/* 3D Interactive Doors (Instagram Reel Flex) */
+.door-container {
+  perspective: 1200px;
+}
+
+.door-frame {
+  transform-style: preserve-3d;
+}
+
+.door-leaf {
+  transform-origin: left center;
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.65s ease;
+  transform-style: preserve-3d;
+}
+
+.door-open {
+  transform: rotateY(-74deg);
+}
+
+@keyframes string-pull {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(18px); }
+  100% { transform: translateY(0); }
+}
+
+.animate-pull {
+  animation: string-pull 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 28s linear infinite;
+}
+
 /* Subtle Tech Grid Background */
 .bg-grid-pattern {
   background-size: 36px 36px;
