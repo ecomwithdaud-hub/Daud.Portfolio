@@ -184,7 +184,7 @@ export default function App() {
 
   useEffect(() => {
     const currentRole = roles[currentRoleIndex];
-    let timeout: NodeJS.Timeout;
+    let timeout: any;
 
     if (!isDeleting && displayedText !== currentRole) {
       timeout = setTimeout(() => {
@@ -382,7 +382,7 @@ export default function App() {
   const [isPlayingTimeline, setIsPlayingTimeline] = useState(false);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: any;
     if (isPlayingTimeline) {
       interval = setInterval(() => {
         setSelectedEraIndex(prev => (prev + 1) % timelineEras.length);
