@@ -46,7 +46,11 @@ import {
   Maximize2,
   Play,
   Pause,
-  RotateCcw
+  RotateCcw,
+  Bot,
+  User,
+  RefreshCw,
+  Minus
 } from 'lucide-react';
 
 // Custom Type-Safe Inline Brand SVGs (matches 24x24 stroke aesthetic)
@@ -82,6 +86,43 @@ const WhatsAppIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
   </svg>
 );
 
+const XTwitterIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="currentColor" 
+    className={className}
+  >
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+  </svg>
+);
+
+const InstagramIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+  </svg>
+);
+
+// Message Type for Chatbot
+interface ChatMessage {
+  id: string;
+  sender: 'bot' | 'user';
+  text: string;
+  timestamp: string;
+  actions?: { label: string; actionType: 'whatsapp' | 'cv' | 'door' | 'link'; payload?: string }[];
+}
+
 export default function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [stringPulling, setStringPulling] = useState(false);
@@ -96,7 +137,6 @@ export default function App() {
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      // Format to Pakistan Standard Time (UTC+5)
       const options: Intl.DateTimeFormatOptions = {
         timeZone: 'Asia/Karachi',
         hour: '2-digit',
@@ -123,6 +163,7 @@ export default function App() {
         setDossierModalOpen(false);
         setContactModalOpen(false);
         setEstimatorOpen(false);
+        setChatOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -355,7 +396,6 @@ export default function App() {
   // Estimator State
   const [projectType, setProjectType] = useState<'mvp' | 'ai' | 'enterprise'>('ai');
   const [speed, setSpeed] = useState<'standard' | 'accelerated'>('accelerated');
-  const [includeDossier, setIncludeDossier] = useState(true);
 
   const estimatedTimeline = useMemo(() => {
     let weeks = projectType === 'mvp' ? 2 : projectType === 'ai' ? 3.5 : 6;
@@ -390,6 +430,180 @@ export default function App() {
     const text = customText || `Hi Daud, I viewed your portfolio and would like to discuss a project with you!`;
     const url = `https://wa.me/923286673627?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
+  };
+
+  // ----------------------------------------------------
+  // INTELLIGENT AI AGENT / CHATBOT ENGINE (CV & LINKEDIN)
+  // ----------------------------------------------------
+  const [chatOpen, setChatOpen] = useState(false);
+  const [speechBubbleDismissed, setSpeechBubbleDismissed] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [isBotTyping, setIsBotTyping] = useState(false);
+  const chatMessagesEndRef = useRef<HTMLDivElement>(null);
+
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      id: 'welcome',
+      sender: 'bot',
+      text: "Hello! 👋 I'm Daud's Portfolio AI Agent, trained directly on his verified 2.2MB CV dossier and engineering history. How can I help you today?",
+      timestamp: 'Just now',
+      actions: [
+        { label: '🏆 5th Worldwide @ AEIF', actionType: 'door', payload: 'sabz-ai' },
+        { label: '🏢 About Zepra Tech', actionType: 'door', payload: 'zepra-tech' },
+        { label: '📄 Download Verified CV', actionType: 'cv' },
+        { label: '💬 Chat on WhatsApp', actionType: 'whatsapp' }
+      ]
+    }
+  ]);
+
+  useEffect(() => {
+    if (chatOpen) {
+      chatMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages, chatOpen]);
+
+  // Knowledge-based AI response generator
+  const generateAgentResponse = (query: string): { text: string; actions?: ChatMessage['actions'] } => {
+    const q = query.toLowerCase();
+
+    // 1. Who is Daud?
+    if (q.includes('who') || q.includes('about') || q.includes('daud') || q.includes('bio') || q.includes('profile')) {
+      return {
+        text: "Muhammad Daud Ali Lashari is a Full-Stack Systems Architect, Tech Entrepreneur, and Founder & CEO of Zepra Tech (gozepra.tech). He was awarded 5th Worldwide Finalist at the 4th International AEIF AI Showdown 2026 for building the SABZ AI Traffic System. He holds a BS in Computer Science with top honors and specializes in enterprise web architectures, real-time AI computer vision, and autonomous agent systems.",
+        actions: [
+          { label: '📄 View Verified CV (PDF)', actionType: 'cv' },
+          { label: '💬 Message Daud on WhatsApp', actionType: 'whatsapp' }
+        ]
+      };
+    }
+
+    // 2. AEIF / SABZ AI Traffic System
+    if (q.includes('aeif') || q.includes('showdown') || q.includes('sabz') || q.includes('traffic') || q.includes('5th') || q.includes('award')) {
+      return {
+        text: "At the 4th International AEIF AI Showdown 2026, Daud achieved 5th Worldwide Finalist ranking with the SABZ AI Traffic System! It is an intelligent computer vision engine that processes multi-lane video streams with YOLOv8 at <42ms edge latency, reducing traffic delays by ~34% and automatically giving green-wave priority to emergency responders.",
+        actions: [
+          { label: '🚪 Open SABZ AI Door', actionType: 'door', payload: 'sabz-ai' },
+          { label: '💬 Inquire on WhatsApp', actionType: 'whatsapp', payload: 'Hi Daud, tell me more about SABZ AI Traffic System.' }
+        ]
+      };
+    }
+
+    // 3. Zepra Tech
+    if (q.includes('zepra') || q.includes('company') || q.includes('ceo') || q.includes('founder') || q.includes('gozepra')) {
+      return {
+        text: "Zepra Tech (gozepra.tech) is the technology venture founded and led by Muhammad Daud Ali Lashari. The firm delivers high-concurrency enterprise web platforms, cloud-native microservices, modern React/Next.js platforms, and bespoke AI workflows with 99.98% uptime SLA and sub-100ms response times worldwide.",
+        actions: [
+          { label: '🌐 Visit gozepra.tech', actionType: 'link', payload: 'https://gozepra.tech' },
+          { label: '🚪 Inspect Zepra Door', actionType: 'door', payload: 'zepra-tech' }
+        ]
+      };
+    }
+
+    // 4. Skills & Tech Stack
+    if (q.includes('skill') || q.includes('stack') || q.includes('tech') || q.includes('language') || q.includes('framework') || q.includes('react') || q.includes('python')) {
+      return {
+        text: "Daud's core engineering stack includes:\n• Frontend: React 18/19, Next.js 15, TypeScript, Tailwind CSS, Vite, HTML5 Canvas\n• Backend & Cloud: Node.js, Python, FastAPI, Express, Docker, PostgreSQL, RESTful APIs, Redis\n• AI & Machine Learning: Computer Vision, YOLOv8, PyTorch, OpenCV, Multi-Agent Swarms, LLM Prompt Engineering\n• Vector Systems: LinkedIn Graph data pipelines & headless document generation.",
+        actions: [
+          { label: '📊 Calculate Project ROI', actionType: 'door', payload: 'sabz-ai' },
+          { label: '📄 Full Skill Matrix in CV', actionType: 'cv' }
+        ]
+      };
+    }
+
+    // 5. Resume / CV / PDF
+    if (q.includes('cv') || q.includes('resume') || q.includes('pdf') || q.includes('dossier') || q.includes('download')) {
+      return {
+        text: "Daud's official 2.2 MB High-DPI Executive Dossier was generated directly from his verified LinkedIn credentials using his custom Autonomous Vector Engine. You can view the full preview or download the vector PDF right now!",
+        actions: [
+          { label: '📄 Download Executive CV (PDF)', actionType: 'cv' }
+        ]
+      };
+    }
+
+    // 6. Hire / Contact / WhatsApp / Pricing
+    if (q.includes('hire') || q.includes('contact') || q.includes('whatsapp') || q.includes('email') || q.includes('work') || q.includes('rate') || q.includes('quote') || q.includes('cost')) {
+      return {
+        text: "Daud is currently open for high-impact technical leadership, full-stack architectural contracts, and AI systems development! You can connect with him directly on WhatsApp (+92 328 6673627) or email (daudlashari39@gmail.com). Typical response time is under 2 hours.",
+        actions: [
+          { label: '💬 Chat Now on WhatsApp', actionType: 'whatsapp' },
+          { label: '✉️ Send Direct Message', actionType: 'link', payload: 'mailto:daudlashari39@gmail.com' }
+        ]
+      };
+    }
+
+    // 7. Social Media Links
+    if (q.includes('social') || q.includes('twitter') || q.includes('x') || q.includes('instagram') || q.includes('github') || q.includes('linkedin')) {
+      return {
+        text: "You can find Daud across all major platforms:\n• LinkedIn: linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/\n• GitHub: github.com/ecomwithdaud-hub\n• X / Twitter: x.com/DaudLashari400\n• Instagram: instagram.com/daud_lashari_9907/\n• Website: gozepra.tech",
+        actions: [
+          { label: '🐦 Open X / Twitter', actionType: 'link', payload: 'https://x.com/DaudLashari400' },
+          { label: '📸 Open Instagram', actionType: 'link', payload: 'https://www.instagram.com/daud_lashari_9907/' },
+          { label: '💼 Open LinkedIn', actionType: 'link', payload: 'https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/' }
+        ]
+      };
+    }
+
+    // 8. Education
+    if (q.includes('education') || q.includes('degree') || q.includes('university') || q.includes('college') || q.includes('study') || q.includes('bscs')) {
+      return {
+        text: "Daud completed his Bachelor of Science in Computer Science (BSCS) with high distinction in Algorithms, Data Structures, Operating Systems, Computer Architecture, and Artificial Intelligence, backed by active leadership in technology societies and hackathons.",
+        actions: [
+          { label: '📄 Academic Honors in CV', actionType: 'cv' }
+        ]
+      };
+    }
+
+    // Fallback default helpful response
+    return {
+      text: `Thanks for asking! As Daud's Portfolio AI Agent, I can tell you about his 5th Worldwide Finalist award at AEIF 2026, his work as Founder & CEO of Zepra Tech, his technical stack (React, Next.js 15, Python, AI), or connect you directly with him on WhatsApp or socials.`,
+      actions: [
+        { label: '💬 Chat on WhatsApp', actionType: 'whatsapp', payload: `Hi Daud, I was asking your AI: "${query}"` },
+        { label: '📄 Download Official CV', actionType: 'cv' },
+        { label: '🐦 View X / Twitter', actionType: 'link', payload: 'https://x.com/DaudLashari400' }
+      ]
+    };
+  };
+
+  const handleSendMessage = (textToSend?: string) => {
+    const q = (textToSend || chatInput).trim();
+    if (!q) return;
+
+    const userMsg: ChatMessage = {
+      id: String(Date.now()),
+      sender: 'user',
+      text: q,
+      timestamp: 'Just now'
+    };
+
+    setChatMessages(prev => [...prev, userMsg]);
+    setChatInput('');
+    setIsBotTyping(true);
+
+    setTimeout(() => {
+      const response = generateAgentResponse(q);
+      const botMsg: ChatMessage = {
+        id: String(Date.now() + 1),
+        sender: 'bot',
+        text: response.text,
+        timestamp: 'Just now',
+        actions: response.actions
+      };
+      setChatMessages(prev => [...prev, botMsg]);
+      setIsBotTyping(false);
+    }, 600);
+  };
+
+  const handleActionClick = (action: NonNullable<ChatMessage['actions']>[number]) => {
+    if (action.actionType === 'whatsapp') {
+      openWhatsApp(action.payload);
+    } else if (action.actionType === 'cv') {
+      setDossierModalOpen(true);
+    } else if (action.actionType === 'door') {
+      setActiveDoorId(action.payload || 'sabz-ai');
+      window.location.hash = '#doors';
+    } else if (action.actionType === 'link' && action.payload) {
+      window.open(action.payload, '_blank');
+    }
   };
 
   return (
@@ -638,32 +852,64 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Quick Social & Verified Links */}
-              <div className="flex items-center gap-4 pt-3 text-xs text-slate-400">
+              {/* Verified Connect Links with X, Instagram, LinkedIn, GitHub, Zepra Tech */}
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-3 text-xs text-slate-400">
                 <span className="font-mono uppercase tracking-wider text-[11px]">Connect:</span>
+                
                 <a 
                   href="https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
+                  title="LinkedIn"
                 >
                   <Linkedin className="w-3.5 h-3.5 text-cyan-400" /> LinkedIn
                 </a>
-                <span className="text-slate-600">•</span>
+                
+                <span className="text-slate-700">•</span>
+                
                 <a 
                   href="https://github.com/ecomwithdaud-hub" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
+                  title="GitHub"
                 >
                   <Code2 className="w-3.5 h-3.5 text-slate-300" /> GitHub
                 </a>
-                <span className="text-slate-600">•</span>
+
+                <span className="text-slate-700">•</span>
+
+                <a 
+                  href="https://x.com/DaudLashari400" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
+                  title="X (formerly Twitter)"
+                >
+                  <XTwitterIcon className="w-3.5 h-3.5 text-slate-200" /> X.com
+                </a>
+
+                <span className="text-slate-700">•</span>
+
+                <a 
+                  href="https://www.instagram.com/daud_lashari_9907/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-pink-400 transition-colors flex items-center gap-1.5"
+                  title="Instagram"
+                >
+                  <InstagramIcon className="w-3.5 h-3.5 text-pink-400" /> Instagram
+                </a>
+
+                <span className="text-slate-700">•</span>
+
                 <a 
                   href="https://gozepra.tech" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
+                  className="hover:text-emerald-400 transition-colors flex items-center gap-1.5"
+                  title="Zepra Tech Platform"
                 >
                   <Globe className="w-3.5 h-3.5 text-emerald-400" /> gozepra.tech
                 </a>
@@ -1391,6 +1637,7 @@ export default function App() {
                 <li><a href="#timeline" className="hover:text-cyan-400 transition-colors">Back In Time (Timeline)</a></li>
                 <li><button onClick={() => setEstimatorOpen(true)} className="hover:text-cyan-400 transition-colors">ROI Calculator</button></li>
                 <li><button onClick={() => setDossierModalOpen(true)} className="hover:text-cyan-400 transition-colors">Executive PDF Dossier</button></li>
+                <li><button onClick={() => setChatOpen(true)} className="hover:text-cyan-400 transition-colors flex items-center gap-1"><Bot className="w-3 h-3 text-cyan-400" /> Talk to AI Agent</button></li>
               </ul>
             </div>
 
@@ -1415,10 +1662,10 @@ export default function App() {
               </div>
             </div>
 
-            {/* Column 4: Verified Social & Direct */}
+            {/* Column 4: Verified Social & Direct (Included X, Instagram, LinkedIn, GitHub, Zepra) */}
             <div className="space-y-3">
               <p className="font-mono uppercase tracking-wider text-slate-400 font-semibold text-[11px]">
-                Verified Records
+                Verified Socials &amp; Direct
               </p>
               <ul className="space-y-2 text-slate-300">
                 <li>
@@ -1428,7 +1675,7 @@ export default function App() {
                     rel="noopener noreferrer"
                     className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
                   >
-                    <Linkedin className="w-3.5 h-3.5 text-cyan-400" /> LinkedIn Profile
+                    <Linkedin className="w-3.5 h-3.5 text-cyan-400" /> LinkedIn
                   </a>
                 </li>
                 <li>
@@ -1438,7 +1685,27 @@ export default function App() {
                     rel="noopener noreferrer"
                     className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
                   >
-                    <Code2 className="w-3.5 h-3.5 text-slate-300" /> GitHub Repository
+                    <Code2 className="w-3.5 h-3.5 text-slate-300" /> GitHub
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="https://x.com/DaudLashari400"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
+                  >
+                    <XTwitterIcon className="w-3.5 h-3.5 text-slate-200" /> X (Twitter) @DaudLashari400
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="https://www.instagram.com/daud_lashari_9907/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-pink-400 transition-colors flex items-center gap-1.5"
+                  >
+                    <InstagramIcon className="w-3.5 h-3.5 text-pink-400" /> Instagram @daud_lashari_9907
                   </a>
                 </li>
                 <li>
@@ -1449,14 +1716,6 @@ export default function App() {
                     className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
                   >
                     <Globe className="w-3.5 h-3.5 text-emerald-400" /> Zepra Tech (gozepra.tech)
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="mailto:daudlashari39@gmail.com"
-                    className="hover:text-cyan-400 transition-colors flex items-center gap-1.5"
-                  >
-                    <Mail className="w-3.5 h-3.5 text-amber-400" /> daudlashari39@gmail.com
                   </a>
                 </li>
                 <li>
@@ -1482,6 +1741,196 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* ---------------------------------------------------------------- */}
+      {/* FLOATING WAVING AI ROBOT AVATAR & INTELLIGENT CHATBOT (Requested) */}
+      {/* ---------------------------------------------------------------- */}
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end select-none">
+        
+        {/* Floating Speech Bubble (from user image) */}
+        {!chatOpen && !speechBubbleDismissed && (
+          <div className="mb-2 relative animate-bounce [animation-duration:3s]">
+            <div className="bg-white text-slate-900 rounded-2xl px-4 py-3 shadow-2xl border border-slate-200/80 max-w-[210px] relative">
+              <button 
+                onClick={(e) => { e.stopPropagation(); setSpeechBubbleDismissed(true); }}
+                className="absolute top-2 right-2 text-slate-400 hover:text-slate-700 p-0.5 rounded-full"
+                title="Dismiss"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+              <p className="text-xs font-bold text-slate-900 flex items-center gap-1">
+                Hello! <span className="text-sm">👋</span>
+              </p>
+              <p className="text-[11px] font-medium text-slate-700 mt-0.5 leading-snug cursor-pointer" onClick={() => setChatOpen(true)}>
+                How can I help you today?
+              </p>
+              
+              {/* Bubble Triangle pointer */}
+              <div className="absolute -bottom-2 right-8 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-white" />
+            </div>
+          </div>
+        )}
+
+        {/* The Cute Waving Robot Character Button */}
+        <div 
+          onClick={() => setChatOpen(prev => !prev)}
+          className="relative cursor-pointer group flex items-end justify-center transform hover:scale-105 active:scale-95 transition-all"
+          title="Click to chat with Daud's AI Assistant!"
+        >
+          {/* Pulsing Aura */}
+          <div className="absolute -inset-2 rounded-full bg-cyan-500/25 blur-lg group-hover:bg-cyan-400/40 transition-colors animate-pulse" />
+
+          {/* Robot Avatar Image Frame */}
+          <div className="relative w-16 h-20 sm:w-20 sm:h-24 flex items-end justify-center overflow-visible">
+            <img 
+              src="/agent_avatar.png" 
+              alt="Daud AI Robot Assistant" 
+              className="w-full h-full object-contain filter drop-shadow-[0_10px_15px_rgba(6,182,212,0.4)]"
+            />
+            {/* Live Green Status Ring */}
+            <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-slate-950 shadow-md animate-ping" />
+            <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-slate-950 shadow-md" />
+          </div>
+        </div>
+      </div>
+
+      {/* AI CHATBOT WINDOW (Interactive, CV-Trained) */}
+      {chatOpen && (
+        <div className="fixed bottom-24 right-4 sm:right-6 z-50 w-[92vw] sm:w-[400px] h-[550px] max-h-[80vh] rounded-3xl border border-slate-800 bg-slate-950/95 backdrop-blur-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-300">
+          
+          {/* Chat Window Top Bar */}
+          <div className="px-4 py-3 bg-gradient-to-r from-slate-900 via-cyan-950/40 to-slate-900 border-b border-slate-800 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="relative w-8 h-8 rounded-full overflow-hidden bg-slate-900 border border-cyan-500/50 p-0.5">
+                <img src="/agent_avatar.png" alt="Bot" className="w-full h-full object-contain" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h4 className="text-xs font-bold text-white">Daud AI Assistant</h4>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                </div>
+                <p className="text-[10px] text-cyan-400 font-mono">Trained on Verified CV Dossier</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setChatMessages([
+                  {
+                    id: String(Date.now()),
+                    sender: 'bot',
+                    text: "Conversation cleared! How can I assist you with Muhammad Daud's portfolio, background, or projects?",
+                    timestamp: 'Just now'
+                  }
+                ])}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                title="Reset conversation"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setChatOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                title="Minimize chat"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Chat Messages Body */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 font-sans text-xs">
+            {chatMessages.map((msg) => (
+              <div 
+                key={msg.id}
+                className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+              >
+                <div className="flex items-start gap-2 max-w-[85%]">
+                  {msg.sender === 'bot' && (
+                    <div className="w-6 h-6 rounded-full bg-cyan-950 border border-cyan-500/40 flex items-center justify-center shrink-0 mt-0.5">
+                      <Bot className="w-3.5 h-3.5 text-cyan-400" />
+                    </div>
+                  )}
+
+                  <div className={`p-3 rounded-2xl whitespace-pre-line leading-relaxed shadow-md ${
+                    msg.sender === 'user'
+                      ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-tr-none'
+                      : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-none'
+                  }`}>
+                    {msg.text}
+                  </div>
+                </div>
+
+                {/* Quick Action Buttons attached to Bot Message */}
+                {msg.actions && msg.actions.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2 ml-8">
+                    {msg.actions.map((act, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleActionClick(act)}
+                        className="px-2.5 py-1 rounded-lg text-[10px] font-mono border border-cyan-500/30 bg-cyan-950/40 text-cyan-300 hover:bg-cyan-900/50 hover:text-white transition-all flex items-center gap-1 shadow-sm"
+                      >
+                        {act.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {isBotTyping && (
+              <div className="flex items-center gap-2 text-slate-400 text-[11px] font-mono ml-2">
+                <Bot className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
+                <span>Daud AI is thinking...</span>
+              </div>
+            )}
+
+            <div ref={chatMessagesEndRef} />
+          </div>
+
+          {/* Quick Prompt Chips */}
+          <div className="px-3 py-2 bg-slate-900/70 border-t border-slate-800/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar text-[10px]">
+            <span className="text-slate-400 font-mono shrink-0">Ask:</span>
+            {[
+              'Who is Daud?',
+              'AEIF Top 5 Award',
+              'Zepra Tech',
+              'Skills & Stack',
+              'Download CV',
+              'WhatsApp & Hire'
+            ].map((chip) => (
+              <button
+                key={chip}
+                onClick={() => handleSendMessage(chip)}
+                className="px-2 py-0.5 rounded-full border border-slate-700 bg-slate-800/80 text-slate-300 hover:border-cyan-400 hover:text-cyan-300 whitespace-nowrap transition-colors"
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+
+          {/* Chat Input Bar */}
+          <form 
+            onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+            className="p-3 bg-slate-950 border-t border-slate-800 flex items-center gap-2"
+          >
+            <input
+              type="text"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              placeholder="Ask anything about Daud's CV or projects..."
+              className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-cyan-400 transition-colors"
+            />
+            <button
+              type="submit"
+              disabled={!chatInput.trim()}
+              className="p-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 disabled:hover:bg-cyan-500 text-slate-950 transition-colors"
+            >
+              <Send className="w-3.5 h-3.5" />
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* MODAL 1: EXECUTIVE DOSSIER / VERIFIED CV VIEWER */}
       {dossierModalOpen && (
@@ -1773,10 +2222,13 @@ export default function App() {
               {[
                 { title: 'The Doors (Flagship Projects)', href: '#doors', icon: Sparkles },
                 { title: 'Back In Time (Timeline & Experience)', href: '#timeline', icon: Clock },
+                { title: 'Talk to Daud AI Agent', action: () => { setCommandPaletteOpen(false); setChatOpen(true); }, icon: Bot },
                 { title: 'Launch ROI & Scope Calculator', action: () => { setCommandPaletteOpen(false); setEstimatorOpen(true); }, icon: Calculator },
                 { title: 'Download Executive CV Dossier (PDF)', action: () => { setCommandPaletteOpen(false); setDossierModalOpen(true); }, icon: Download },
                 { title: 'Open LinkedIn Profile', action: () => window.open('https://www.linkedin.com/in/muhammad-daud-ali-lashari-1302a5337/', '_blank'), icon: Globe },
                 { title: 'Open GitHub Profile', action: () => window.open('https://github.com/ecomwithdaud-hub', '_blank'), icon: Code2 },
+                { title: 'Open X / Twitter (@DaudLashari400)', action: () => window.open('https://x.com/DaudLashari400', '_blank'), icon: Globe },
+                { title: 'Open Instagram (@daud_lashari_9907)', action: () => window.open('https://www.instagram.com/daud_lashari_9907/', '_blank'), icon: Globe },
                 { title: 'Chat via WhatsApp (+92 328 6673627)', action: () => openWhatsApp(), icon: Phone }
               ].map((cmd, i) => (
                 <button
