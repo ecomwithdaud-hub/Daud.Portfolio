@@ -114,6 +114,102 @@ const InstagramIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
   </svg>
 );
 
+// High-Fidelity Animated 3D Cute Robot Assistant Avatar (Vector Clean)
+const CuteBotAvatar = ({ className = "w-20 h-24", animated = true }: { className?: string; animated?: boolean }) => (
+  <svg
+    viewBox="0 0 160 190"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={`${className} ${animated ? 'animate-bot-float' : ''}`}
+  >
+    <defs>
+      <linearGradient id="headGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#ffffff" />
+        <stop offset="70%" stopColor="#f1f5f9" />
+        <stop offset="100%" stopColor="#cbd5e1" />
+      </linearGradient>
+      <linearGradient id="visorGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stopColor="#090d16" />
+        <stop offset="100%" stopColor="#0f172a" />
+      </linearGradient>
+      <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#38bdf8" />
+        <stop offset="100%" stopColor="#0284c7" />
+      </linearGradient>
+      <linearGradient id="laptopGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#64748b" />
+        <stop offset="100%" stopColor="#334155" />
+      </linearGradient>
+      <filter id="botGlow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="3" result="blur" />
+        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+      </filter>
+    </defs>
+
+    {/* Antenna */}
+    <rect x="77" y="14" width="6" height="18" rx="3" fill="#94a3b8" />
+    <circle cx="80" cy="14" r="8" fill="url(#blueGrad)" filter="url(#botGlow)" />
+    <circle cx="78" cy="11" r="2.5" fill="#ffffff" opacity="0.85" />
+
+    {/* Ears / Side Headset Caps */}
+    <rect x="28" y="52" width="10" height="26" rx="5" fill="url(#blueGrad)" />
+    <rect x="122" y="52" width="10" height="26" rx="5" fill="url(#blueGrad)" />
+    <circle cx="33" cy="65" r="3" fill="#ffffff" opacity="0.6" />
+    <circle cx="127" cy="65" r="3" fill="#ffffff" opacity="0.6" />
+
+    {/* Rounded Head Shell */}
+    <rect x="36" y="28" width="88" height="74" rx="36" fill="url(#headGrad)" stroke="#cbd5e1" strokeWidth="2.5" />
+    
+    {/* Head Top Specular Highlight */}
+    <path d="M52 38 Q80 32 108 38" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" opacity="0.9" />
+
+    {/* Dark Glossy Visor */}
+    <rect x="46" y="44" width="68" height="44" rx="20" fill="url(#visorGrad)" stroke="#1e293b" strokeWidth="1.5" />
+    
+    {/* Visor Glare / Reflection */}
+    <path d="M56 48 L76 48 L68 56 L52 56 Z" fill="#ffffff" opacity="0.12" />
+
+    {/* Curved Glowing Happy Blue Eyes */}
+    <path d="M56 66 Q63 55 70 66" fill="none" stroke="#38bdf8" strokeWidth="3.5" strokeLinecap="round" filter="url(#botGlow)" />
+    <path d="M90 66 Q97 55 104 66" fill="none" stroke="#38bdf8" strokeWidth="3.5" strokeLinecap="round" filter="url(#botGlow)" />
+
+    {/* Cheerful Mouth */}
+    <path d="M75 75 Q80 80 85 75" fill="none" stroke="#38bdf8" strokeWidth="2.5" strokeLinecap="round" />
+
+    {/* Neck */}
+    <rect x="72" y="98" width="16" height="8" rx="4" fill="#64748b" />
+
+    {/* Body / Torso */}
+    <path d="M54 104 C54 104 48 144 55 150 C62 155 98 155 105 150 C112 144 106 104 106 104 Z" fill="url(#headGrad)" stroke="#cbd5e1" strokeWidth="2.5" />
+    <circle cx="80" cy="116" r="3.5" fill="#38bdf8" filter="url(#botGlow)" />
+
+    {/* Legs / Feet */}
+    <rect x="62" y="148" width="14" height="20" rx="7" fill="url(#headGrad)" stroke="#94a3b8" strokeWidth="1.5" />
+    <rect x="84" y="148" width="14" height="20" rx="7" fill="url(#headGrad)" stroke="#94a3b8" strokeWidth="1.5" />
+
+    {/* Left Arm & Open Laptop */}
+    <path d="M56 112 C44 118 40 136 50 144" fill="none" stroke="url(#headGrad)" strokeWidth="9" strokeLinecap="round" />
+    {/* Laptop Base */}
+    <polygon points="40,136 78,136 74,148 36,148" fill="url(#laptopGrad)" stroke="#1e293b" strokeWidth="1" />
+    {/* Laptop Screen */}
+    <rect x="42" y="112" width="30" height="24" rx="2" fill="#1e293b" stroke="#334155" strokeWidth="1" transform="rotate(-6 42 112)" />
+    <rect x="44" y="114" width="26" height="20" rx="1.5" fill="#0284c7" opacity="0.95" transform="rotate(-6 42 112)" />
+    <circle cx="56" cy="123" r="2.5" fill="#ffffff" />
+    <circle cx="50" cy="142" r="5" fill="url(#headGrad)" />
+
+    {/* Right Arm - Waving Hand with Signals */}
+    <g className={animated ? 'animate-bot-wave' : ''}>
+      <path d="M104 112 C116 110 128 100 132 86" fill="none" stroke="url(#headGrad)" strokeWidth="9" strokeLinecap="round" />
+      <circle cx="133" cy="85" r="7" fill="url(#headGrad)" stroke="#cbd5e1" strokeWidth="1.5" />
+      <path d="M130 87 Q128 81 133 81" fill="none" stroke="url(#headGrad)" strokeWidth="3.5" strokeLinecap="round" />
+      
+      {/* Wave Signal Arcs */}
+      <path d="M143 77 A12 12 0 0 1 143 93" fill="none" stroke="#38bdf8" strokeWidth="2.5" strokeLinecap="round" opacity="0.85" />
+      <path d="M149 72 A20 20 0 0 1 149 98" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
+    </g>
+  </svg>
+);
+
 // Message Type for Chatbot
 interface ChatMessage {
   id: string;
@@ -1747,49 +1843,52 @@ export default function App() {
       {/* ---------------------------------------------------------------- */}
       <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end select-none">
         
-        {/* Floating Speech Bubble (from user image) */}
+        {/* Single Clean Speech Bubble (Pins above the robot) */}
         {!chatOpen && !speechBubbleDismissed && (
-          <div className="mb-2 relative animate-bounce [animation-duration:3s]">
-            <div className="bg-white text-slate-900 rounded-2xl px-4 py-3 shadow-2xl border border-slate-200/80 max-w-[210px] relative">
+          <div className="mb-2 relative animate-bounce [animation-duration:3.5s]">
+            <div 
+              onClick={() => setChatOpen(true)}
+              className="bg-white text-slate-900 rounded-2xl px-4 py-3 shadow-xl border border-slate-200/90 max-w-[210px] relative cursor-pointer hover:shadow-2xl transition-shadow"
+            >
               <button 
                 onClick={(e) => { e.stopPropagation(); setSpeechBubbleDismissed(true); }}
-                className="absolute top-2 right-2 text-slate-400 hover:text-slate-700 p-0.5 rounded-full"
-                title="Dismiss"
+                className="absolute top-2 right-2 text-slate-400 hover:text-slate-700 p-0.5 rounded-full hover:bg-slate-100 transition-colors"
+                title="Dismiss speech bubble"
+                aria-label="Dismiss"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
               <p className="text-xs font-bold text-slate-900 flex items-center gap-1">
                 Hello! <span className="text-sm">👋</span>
               </p>
-              <p className="text-[11px] font-medium text-slate-700 mt-0.5 leading-snug cursor-pointer" onClick={() => setChatOpen(true)}>
+              <p className="text-[11px] font-medium text-slate-600 mt-0.5 leading-snug">
                 How can I help you today?
               </p>
               
-              {/* Bubble Triangle pointer */}
-              <div className="absolute -bottom-2 right-8 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-white" />
+              {/* Pointer Arrow pointing down to robot antenna */}
+              <div className="absolute -bottom-2 right-9 w-0 h-0 border-l-[7px] border-l-transparent border-r-[7px] border-r-transparent border-t-[8px] border-t-white filter drop-shadow-sm" />
             </div>
           </div>
         )}
 
-        {/* The Cute Waving Robot Character Button */}
+        {/* The Cute Waving Robot Character Button (Vector Clean - No Screenshots) */}
         <div 
           onClick={() => setChatOpen(prev => !prev)}
           className="relative cursor-pointer group flex items-end justify-center transform hover:scale-105 active:scale-95 transition-all"
           title="Click to chat with Daud's AI Assistant!"
         >
-          {/* Pulsing Aura */}
-          <div className="absolute -inset-2 rounded-full bg-cyan-500/25 blur-lg group-hover:bg-cyan-400/40 transition-colors animate-pulse" />
+          {/* Subtle Ambient Glow */}
+          <div className="absolute -inset-1 rounded-full bg-cyan-500/20 blur-md group-hover:bg-cyan-400/35 transition-colors animate-pulse" />
 
-          {/* Robot Avatar Image Frame */}
-          <div className="relative w-16 h-20 sm:w-20 sm:h-24 flex items-end justify-center overflow-visible">
-            <img 
-              src="/agent_avatar.png" 
-              alt="Daud AI Robot Assistant" 
-              className="w-full h-full object-contain filter drop-shadow-[0_10px_15px_rgba(6,182,212,0.4)]"
-            />
-            {/* Live Green Status Ring */}
-            <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-slate-950 shadow-md animate-ping" />
-            <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-slate-950 shadow-md" />
+          {/* Isolated Cute Robot SVG */}
+          <div className="relative w-20 h-24 sm:w-24 sm:h-28 flex items-end justify-center">
+            <CuteBotAvatar className="w-full h-full object-contain filter drop-shadow-[0_8px_16px_rgba(6,182,212,0.35)]" />
+            
+            {/* Live Green Online Status Badge */}
+            <div className="absolute top-2 right-4 flex items-center justify-center">
+              <div className="w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-slate-950 shadow-md animate-ping absolute" />
+              <div className="w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-slate-950 shadow-md relative" />
+            </div>
           </div>
         </div>
       </div>
@@ -1801,8 +1900,8 @@ export default function App() {
           {/* Chat Window Top Bar */}
           <div className="px-4 py-3 bg-gradient-to-r from-slate-900 via-cyan-950/40 to-slate-900 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="relative w-8 h-8 rounded-full overflow-hidden bg-slate-900 border border-cyan-500/50 p-0.5">
-                <img src="/agent_avatar.png" alt="Bot" className="w-full h-full object-contain" />
+              <div className="relative w-8 h-8 rounded-full overflow-hidden bg-slate-900 border border-cyan-500/50 p-0.5 flex items-center justify-center">
+                <CuteBotAvatar className="w-full h-full" animated={false} />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">

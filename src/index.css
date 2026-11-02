@@ -104,6 +104,37 @@
   animation: spin-slow 28s linear infinite;
 }
 
+/* AI Robot Assistant Animations */
+@keyframes bot-wave {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-16deg);
+  }
+  75% {
+    transform: rotate(14deg);
+  }
+}
+
+@keyframes bot-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-bot-wave {
+  animation: bot-wave 1.8s ease-in-out infinite;
+  transform-origin: 105px 115px;
+}
+
+.animate-bot-float {
+  animation: bot-float 4s ease-in-out infinite;
+}
+
 /* Subtle Tech Grid Background */
 .bg-grid-pattern {
   background-size: 36px 36px;
