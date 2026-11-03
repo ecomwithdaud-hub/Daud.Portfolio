@@ -126,7 +126,8 @@
         chevronLeft: <polyline points="15 18 9 12 15 6"/>,
         chevronRight: <polyline points="9 18 15 12 9 6"/>,
         command: <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/>,
-        close: <><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></>
+        close: <><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></>,
+        building: <><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/></>
       };
 
       return (
@@ -412,55 +413,140 @@
       const [hoveredDoorId, setHoveredDoorId] = useState(null);
       const activeDoor = doors.find(d => d.id === activeDoorId) || doors[0];
 
-      // Time Machine
+      // Time Machine - Verified Professional Milestones
       const timelineEras = [
         {
-          year: '2026',
-          period: 'JAN 2026 - PRESENT',
-          role: 'Founder & CEO — Zepra Tech',
-          subtitle: 'Leading Enterprise Software & Global AI Initiatives',
-          details: [
-            'Leading executive technology vision, enterprise development, and architectural design at Zepra Tech (gozepra.tech).',
-            'Achieved Top 5 Global Finalist ranking at the prestigious 4th International AEIF AI Showdown 2026 with SABZ AI Traffic System.',
-            'Architecting intelligent web platforms and agentic automation workflows for high-growth ventures.'
-          ],
-          badges: ['Founder & CEO', 'AEIF Top 5', 'Next.js 15', 'Edge AI', 'Executive Leadership']
-        },
-        {
+          id: 'zepra-tech',
           year: '2025',
-          period: 'JAN 2025 - DEC 2025',
-          role: 'Lead Architect — Autonomous Resume & Vector Engine',
-          subtitle: 'Data Pipeline Engineering & Full-Stack Solutions',
+          shortTab: 'Zepra Tech',
+          company: 'Zepra Tech Digital Agency',
+          industry: 'Web Architecture & Growth',
+          role: 'Chief Executive Officer & Founder',
+          employmentType: 'Full-time',
+          period: 'Feb 2025 – Present (1 yr 10 mos)',
+          location: 'Lahore, Punjab, Pakistan (Hybrid)',
+          coreSkills: 'Strategic Planning, Business Development',
+          subtitle: 'Executive Leadership, Enterprise Web Architecture & Corporate Growth',
           details: [
-            'Engineered the LinkedIn Autonomous Resume & Executive Dossier Engine, generating 2.2MB high-DPI vector dossiers directly from structured profile data.',
-            'Developed production full-stack web applications with React, TypeScript, Tailwind CSS, and Node.js.',
-            'Created high-performance interactive client modules, custom ROI estimators, and responsive interfaces.'
+            'Lead overall company vision, client acquisition, and growth strategies for a digital agency specializing in SEO, digital marketing, and web solutions.',
+            'Combine creativity and technology—ranging from SEO, paid advertising, and web development to graphic design and Shopify setup—to empower brands and deliver measurable results.',
+            'Responsible for identifying new market opportunities, building strategic partnerships, and securing high-value contracts to drive corporate growth and long-term revenue.'
           ],
-          badges: ['Autonomous Vector Engine', 'TypeScript', 'Node.js', 'React', 'Puppeteer']
+          badges: ['Founder & CEO', 'Strategic Planning', 'Business Development', 'Web Architecture', 'SEO & Marketing', 'Hybrid']
         },
         {
+          id: 'us-busdev',
+          year: '2026',
+          shortTab: 'Bus. Dev (US)',
+          company: 'Global Ventures & Enterprise Clients',
+          industry: 'International Market Expansion & Strategy',
+          role: 'Director of Business Development',
+          employmentType: 'Freelance',
+          period: 'May 2026 – Present (7 mos)',
+          location: 'United States (Remote)',
+          coreSkills: 'Strategic Partnerships, Client Acquisition, Enterprise Revenue',
+          subtitle: 'US Corporate Outreach, High-Value B2B Contracts & Market Development',
+          details: [
+            'Responsible for identifying new market opportunities, building strategic partnerships, and securing high-value contracts to drive corporate growth and long-term revenue.',
+            'Spearhead US remote business development initiatives, establishing enterprise pipeline frameworks and international client acquisition.',
+            'Coordinate and secure high-value B2B appointments and commercial partnerships across international enterprise markets.'
+          ],
+          badges: ['Business Development', 'Remote US', 'Enterprise Contracts', 'Strategic Partnerships', 'Pipeline Growth']
+        },
+        {
+          id: 'gsg-tech',
+          year: '2026',
+          shortTab: 'GSG Tech',
+          company: 'GSG Technology Co.',
+          industry: 'Telecommunications & Sales Technology',
+          role: 'Exclusive Sales Agent',
+          employmentType: 'Full-time',
+          period: 'Jan 2026 – Present (11 mos)',
+          location: 'Lahore, Punjab, Pakistan (On-site)',
+          coreSkills: 'Client Communication, Project Management',
+          subtitle: 'Telecommunications Solutions & Strategic Client Execution',
+          details: [
+            'Handle strategic client communications and manage project execution to drive sales objectives.',
+            'Represent GSG Technology as an exclusive sales agent, delivering targeted client presentations and contract closings.',
+            'Manage end-to-end sales lifecycle, client onboarding, and cross-functional technical project coordination.'
+          ],
+          badges: ['Exclusive Sales Agent', 'Telecommunications', 'Client Communication', 'Project Management', 'On-site']
+        },
+        {
+          id: 'integrated-it',
+          year: '2026',
+          shortTab: 'Integrated IT',
+          company: 'Integrated IT Training',
+          industry: 'Professional Tech Training & Solutions',
+          role: 'Appointment Scheduler',
+          employmentType: 'Part-time',
+          period: 'Jan 2026 – Present (11 mos)',
+          location: 'United States (Remote)',
+          coreSkills: 'Appointment Scheduling, Appointment Making',
+          subtitle: 'B2B Enterprise Outreach & Consultation Pipeline Scheduling',
+          details: [
+            'Coordinate and secure high-value B2B appointments and strategic client consultations for enterprise IT training programs.',
+            'Manage outbound prospect qualification, executive calendar alignment, and outreach across US time zones.',
+            'Facilitate effective communication channels between corporate decision-makers and senior technical advisors.'
+          ],
+          badges: ['Appointment Scheduling', 'Appointment Making', 'B2B Outreach', 'Remote US', 'Pipeline Scheduling']
+        },
+        {
+          id: 'planlab',
+          year: '2025',
+          shortTab: 'Planlab',
+          company: 'Planlab Solutions',
+          industry: 'Software & E-Commerce Operations',
+          role: 'Customer Support Representative',
+          employmentType: 'Full-time',
+          period: 'Apr 2025 – Apr 2026 (1 yr 1 mo)',
+          location: 'Lahore, Punjab, Pakistan (On-site)',
+          coreSkills: 'Client Communication, Digital Management, Customer Care',
+          subtitle: 'Software Platform Management & Customer Success Operations',
+          details: [
+            'Delivered full-time customer support, account management, and digital management for software and e-commerce platforms.',
+            'Managed real-time client communication, technical inquiries, and prompt ticket resolutions with high satisfaction scores.',
+            'Collaborated with operational and technical teams to diagnose issues, improve documentation, and optimize user care.'
+          ],
+          badges: ['Customer Support', 'Digital Management', 'Client Communication', 'Customer Care', 'On-site']
+        },
+        {
+          id: 'quicksol',
           year: '2024',
-          period: 'JAN 2024 - DEC 2024',
-          role: 'Full-Stack Developer & Technical Consultant',
-          subtitle: 'Modern Web Engineering & Algorithmic Design',
+          shortTab: 'QUICKSOL',
+          company: 'QUICKSOL LLC',
+          industry: 'Digital Marketing & Outreach Services',
+          role: 'SMS & Email Marketing Specialist',
+          employmentType: 'Part-time',
+          period: 'Jul 2024 – Aug 2024 (2 mos)',
+          location: 'Lahore, Punjab, Pakistan (On-site)',
+          coreSkills: 'Customer Service, Communication, Digital Marketing',
+          subtitle: 'Multi-Channel Outreach & Campaign Performance Optimization',
           details: [
-            'Delivered high-performance frontend and backend services for diverse clients.',
-            'Implemented modern UI/UX design systems with fluid animations, micro-interactions, and accessibility standards.',
-            'Deepened expertise in distributed computing, asynchronous task queues, and database optimization.'
+            'Executed high-volume SMS and email marketing outreach campaigns targeting prospective clients and consumer segments.',
+            'Analyzed campaign open rates, delivery performance, and audience segmentation to optimize digital marketing conversion.',
+            'Delivered responsive customer service and communication for incoming client inquiries generated from marketing funnels.'
           ],
-          badges: ['Full-Stack', 'Frontend UI/UX', 'RESTful APIs', 'Database Design']
+          badges: ['SMS Marketing', 'Email Marketing', 'Digital Marketing', 'Customer Service', 'Communication']
         },
         {
-          year: 'Academic',
-          period: 'FOUNDATIONAL DEGREE',
+          id: 'bscs-degree',
+          year: 'Degree',
+          shortTab: 'BSCS Degree',
+          company: 'Higher Education',
+          industry: 'Computer Science & Software Engineering',
           role: 'Bachelor of Science in Computer Science (BSCS)',
-          subtitle: 'Verified Academic Honors & Theoretical Rigor',
+          employmentType: 'Academic',
+          period: 'FOUNDATIONAL DEGREE',
+          location: 'Lahore, Punjab, Pakistan',
+          coreSkills: 'Algorithms, Data Structures, Operating Systems, Computer Architecture, AI',
+          subtitle: 'Rigorous Academic Foundation & Theoretical Software Architecture',
           details: [
-            'Comprehensive computer science education with top grades across Algorithms, Data Structures, Operating Systems, Computer Architecture, and Artificial Intelligence.',
-            'Developed foundational research in neural networks, computer vision, and real-time distributed systems.',
-            'Synchronized academic and professional credentials documented in official executive dossier.'
+            'Comprehensive computer science education with distinction across Algorithms, Data Structures, Operating Systems, Computer Architecture, and Artificial Intelligence.',
+            'Developed foundational research in neural networks, computer vision, and real-time distributed software systems.',
+            'Active leadership in university tech societies, hackathons, and programming competitions.'
           ],
-          badges: ['BSCS Degree', 'Algorithms & DS', 'Operating Systems', 'AI & ML Honors']
+          badges: ['BSCS Degree', 'Algorithms & DS', 'Operating Systems', 'Computer Architecture', 'AI & Software Eng']
         }
       ];
 
@@ -504,8 +590,11 @@
           if (q.includes('aeif') || q.includes('sabz') || q.includes('traffic') || q.includes('5th')) {
             botText = "At the 4th International AEIF AI Showdown 2026, Daud achieved 5th Worldwide Finalist ranking with SABZ AI Traffic System! It uses YOLOv8 edge computer vision at <42ms latency, reducing urban congestion by 34% and prioritizing emergency vehicles.";
             actions = [{ label: '🚪 Open SABZ AI Door', type: 'door', payload: 'sabz-ai' }, { label: '💬 Inquire on WhatsApp', type: 'whatsapp' }];
+          } else if (q.includes('experience') || q.includes('career') || q.includes('history') || q.includes('job') || q.includes('work') || q.includes('role')) {
+            botText = "Daud's verified career history includes:\n• Founder & CEO — Zepra Tech Digital Agency (Feb 2025 – Present)\n• Director of Business Development (US Remote Freelance, May 2026 – Present)\n• Exclusive Sales Agent — GSG Technology Co. (Jan 2026 – Present)\n• Appointment Scheduler — Integrated IT Training (US Remote, Jan 2026 – Present)\n• Customer Support Representative — Planlab Solutions (Apr 2025 – Apr 2026)\n• SMS & Email Marketing Specialist — QUICKSOL LLC (Jul 2024 – Aug 2024)\n• BS in Computer Science (BSCS Degree)";
+            actions = [{ label: '⚡ Back In Time Timeline', type: 'timeline' }, { label: '📄 View Verified CV (PDF)', type: 'cv' }];
           } else if (q.includes('zepra') || q.includes('company') || q.includes('ceo')) {
-            botText = "Zepra Tech (gozepra.tech) is the engineering firm founded and led by Daud, providing enterprise web platforms, cloud microservices, and AI automations with 99.98% uptime SLA.";
+            botText = "Zepra Tech (gozepra.tech) is the digital agency founded and led by Daud, delivering SEO, digital marketing, web solutions, and enterprise platforms with high-uptime SLA.";
             actions = [{ label: '🌐 Open gozepra.tech', type: 'link', payload: 'https://gozepra.tech' }];
           } else if (q.includes('cv') || q.includes('resume') || q.includes('pdf')) {
             botText = "Daud's official 2.2MB High-DPI Executive Dossier was generated directly from his verified LinkedIn credentials using his custom vector pipeline. You can view or download it directly!";
@@ -523,6 +612,7 @@
         if (act.type === 'whatsapp') openWhatsApp();
         else if (act.type === 'cv') setDossierModalOpen(true);
         else if (act.type === 'door') { setActiveDoorId(act.payload); window.location.hash = '#doors'; }
+        else if (act.type === 'timeline') { window.location.hash = '#timeline'; setChatOpen(false); }
         else if (act.type === 'link') window.open(act.payload, '_blank');
       };
 
@@ -826,33 +916,90 @@
                 <div className="lg:col-span-5 flex flex-col items-center">
                   <div className="relative w-72 h-72 flex items-center justify-center">
                     <div className="absolute inset-0 rounded-full border border-dashed border-cyan-500/30 animate-spin-slow" />
-                    <div className="relative text-center z-10 space-y-1">
-                      <span className="text-[10px] font-mono tracking-widest text-slate-400 block">ERA ARCHIVE</span>
-                      <div className="text-5xl sm:text-6xl font-extrabold text-cyan-400 font-mono">{activeEra.year}</div>
-                      <span className="text-xs font-mono text-cyan-400 font-semibold block px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/30">{activeEra.period}</span>
+                    <div className="relative text-center z-10 space-y-1.5 px-4">
+                      <span className="text-[10px] font-mono tracking-widest text-slate-400 block uppercase">ERA ARCHIVE</span>
+                      <div className="text-4xl sm:text-5xl font-extrabold text-cyan-400 font-mono">{activeEra.year}</div>
+                      <span className="text-[11px] font-mono text-cyan-400 font-semibold block px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/30 max-w-[240px] truncate mx-auto">{activeEra.period}</span>
+                      <span className="text-[11px] font-mono text-slate-300 block font-semibold truncate max-w-[210px] mx-auto">{activeEra.company}</span>
                     </div>
                   </div>
 
-                  <div className="mt-6 p-2 rounded-2xl border border-slate-800 bg-slate-900/90 flex items-center gap-3">
-                    <button onClick={() => setSelectedEraIdx(prev => (prev - 1 + timelineEras.length) % timelineEras.length)} className="p-2 text-slate-400 hover:text-white">
+                  <div className="mt-6 p-2 rounded-2xl border border-slate-800 bg-slate-900/90 flex flex-wrap items-center justify-center gap-2 max-w-full">
+                    <button onClick={() => setSelectedEraIdx(prev => (prev - 1 + timelineEras.length) % timelineEras.length)} className="p-2 text-slate-400 hover:text-white" title="Previous Milestone">
                       <Icon name="chevronLeft" className="w-4 h-4" />
                     </button>
-                    <button onClick={() => setIsPlayingTime(prev => !prev)} className="p-2 bg-cyan-500 text-slate-950 rounded-xl">
+                    <button onClick={() => setIsPlayingTime(prev => !prev)} className="p-2 bg-cyan-500 text-slate-950 rounded-xl" title={isPlayingTime ? "Pause Autoplay" : "Autoplay Timeline"}>
                       <Icon name={isPlayingTime ? "pause" : "play"} className="w-4 h-4" />
                     </button>
-                    <button onClick={() => setSelectedEraIdx(prev => (prev + 1) % timelineEras.length)} className="p-2 text-slate-400 hover:text-white">
+                    <button onClick={() => setSelectedEraIdx(prev => (prev + 1) % timelineEras.length)} className="p-2 text-slate-400 hover:text-white" title="Next Milestone">
                       <Icon name="chevronRight" className="w-4 h-4" />
                     </button>
-                    <span className="text-xs font-mono text-slate-400 px-2">0{selectedEraIdx + 1} / 0{timelineEras.length}</span>
+                    <span className="text-xs font-mono text-slate-400 px-1 whitespace-nowrap">0{selectedEraIdx + 1} / 0{timelineEras.length}</span>
+
+                    <div className="flex items-center gap-1 overflow-x-auto max-w-[320px] sm:max-w-none py-1">
+                      {timelineEras.map((era, idx) => (
+                        <button
+                          key={era.id}
+                          onClick={() => setSelectedEraIdx(idx)}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-mono transition-all whitespace-nowrap ${
+                            selectedEraIdx === idx
+                              ? 'bg-cyan-500 text-slate-950 font-bold shadow-sm'
+                              : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                          }`}
+                          title={`${era.role} @ ${era.company}`}
+                        >
+                          {era.shortTab}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
                 <div className="lg:col-span-7">
                   <div className="rounded-3xl border border-slate-800 p-6 sm:p-8 bg-slate-900/90 backdrop-blur-xl shadow-2xl">
-                    <div className="pb-6 border-b border-slate-800">
-                      <span className="text-xs font-mono text-cyan-400 uppercase font-semibold">{activeEra.period}</span>
-                      <h3 className="text-2xl sm:text-3xl font-bold text-white mt-1">{activeEra.role}</h3>
-                      <p className="text-sm text-slate-400 mt-1">{activeEra.subtitle}</p>
+                    <div className="space-y-3 pb-6 border-b border-slate-800">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                          <span className="text-xs font-mono text-cyan-400 uppercase tracking-wider font-semibold">{activeEra.period}</span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono border border-cyan-500/30 bg-cyan-950/40 text-cyan-300">
+                            {activeEra.employmentType}
+                          </span>
+                          {activeEra.location && (
+                            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono border border-slate-700 bg-slate-800/60 text-slate-300 flex items-center gap-1">
+                              <Icon name="pin" className="w-3 h-3 text-cyan-400" />
+                              {activeEra.location}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-xs font-mono uppercase tracking-wider text-cyan-400/90 font-semibold flex items-center gap-1.5">
+                          <Icon name="building" className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>{activeEra.company}</span>
+                          {activeEra.industry && (
+                            <>
+                              <span className="text-slate-600">•</span>
+                              <span className="text-slate-400">{activeEra.industry}</span>
+                            </>
+                          )}
+                        </div>
+                        <h3 className="text-2xl sm:text-3xl font-bold text-white mt-1">{activeEra.role}</h3>
+                      </div>
+
+                      <p className="text-sm font-medium text-slate-400">{activeEra.subtitle}</p>
+
+                      {activeEra.coreSkills && (
+                        <div className="pt-1 flex flex-wrap items-center gap-1.5 text-xs font-mono">
+                          <span className="text-slate-400">Core Skills:</span>
+                          <span className="text-cyan-300 font-semibold px-2 py-0.5 rounded bg-cyan-950/50 border border-cyan-500/20">
+                            {activeEra.coreSkills}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="py-6 space-y-3">
@@ -1012,7 +1159,7 @@
 
               {/* Chips */}
               <div className="px-3 py-2 bg-slate-900/70 border-t border-slate-800 flex items-center gap-1.5 overflow-x-auto text-[10px]">
-                {['Who is Daud?', 'AEIF Top 5 Award', 'Zepra Tech', 'Skills', 'Download CV', 'Socials'].map(c => (
+                {['Who is Daud?', 'Experience', 'Zepra Tech', 'AEIF Top 5 Award', 'Skills', 'Download CV', 'Socials'].map(c => (
                   <button key={c} onClick={() => handleSendChat(c)} className="px-2 py-0.5 rounded-full border border-slate-700 bg-slate-800 text-slate-300 hover:border-cyan-400 hover:text-cyan-300 whitespace-nowrap">
                     {c}
                   </button>
