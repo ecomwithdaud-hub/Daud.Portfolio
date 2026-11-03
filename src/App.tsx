@@ -2175,26 +2175,41 @@ export default function App() {
 
       {/* MODAL 1: EXECUTIVE DOSSIER / VERIFIED CV VIEWER */}
       {dossierModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md">
-          <div className={`relative w-full max-w-4xl max-h-[92vh] rounded-3xl border shadow-2xl flex flex-col overflow-hidden ${
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-950/90 backdrop-blur-md">
+          <div className={`relative w-full max-w-5xl h-[92vh] rounded-3xl border shadow-2xl flex flex-col overflow-hidden ${
             darkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
           }`}>
             
             {/* Header */}
-            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+            <div className="px-4 sm:px-6 py-3.5 border-b border-slate-800 flex items-center justify-between shrink-0 bg-slate-900">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
                   <FileText className="w-4 h-4 text-cyan-400" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-white">Executive Curriculum Vitae &amp; Dossier</h4>
-                  <p className="text-[11px] text-slate-400 font-mono">
-                    2.2 MB High-DPI Vector Document • Verified LinkedIn Source
+                  <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                    <span>Muhammad Daud Ali Lashari — Curriculum Vitae</span>
+                    <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                      Official Vector PDF
+                    </span>
+                  </h4>
+                  <p className="text-[11px] text-slate-400 font-mono hidden sm:block">
+                    2.2 MB High-DPI Vector Document • Verified Credentials
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
+                <a
+                  href="/Muhammad_Daud_Ali_Lashari_CV.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-700 hover:bg-slate-800 text-slate-200 transition-colors hidden sm:flex items-center gap-1.5"
+                  title="Open PDF in Full Screen"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-cyan-400" /> Full Screen
+                </a>
+
                 <a
                   href="/Muhammad_Daud_Ali_Lashari_CV.pdf"
                   download="Muhammad_Daud_Ali_Lashari_CV.pdf"
@@ -2204,33 +2219,47 @@ export default function App() {
                 </a>
                 <button
                   onClick={() => setDossierModalOpen(false)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                  className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Preview Body */}
-            <div className="flex-1 overflow-y-auto p-6 bg-slate-950/60 flex flex-col items-center">
-              <div className="relative max-w-2xl w-full rounded-2xl overflow-hidden shadow-2xl border border-slate-800 bg-white">
-                <img
-                  src="/cv_full_preview.png"
-                  alt="Muhammad Daud Ali Lashari Verified CV Dossier"
-                  className="w-full h-auto object-contain"
-                />
-              </div>
+            {/* Embedded High-Fidelity PDF Viewer Body */}
+            <div className="flex-1 w-full h-full bg-slate-950 relative overflow-hidden flex flex-col">
+              <iframe
+                src="/Muhammad_Daud_Ali_Lashari_CV.pdf#toolbar=1&navpanes=0&scrollbar=1"
+                className="w-full h-full border-0 flex-1 min-h-[500px]"
+                title="Muhammad Daud Ali Lashari Curriculum Vitae"
+              />
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
-              <span>Status: Authenticated Record</span>
-              <button
-                onClick={() => openWhatsApp('Hi Daud, I reviewed your CV dossier and would like to discuss a role.')}
-                className="text-cyan-400 hover:underline flex items-center gap-1"
-              >
-                Inquire via WhatsApp <ArrowRight className="w-3 h-3" />
-              </button>
+            <div className="px-4 sm:px-6 py-2.5 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono shrink-0 bg-slate-900/95">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="hidden sm:inline">Interactive High-DPI Vector Document (2.2 MB)</span>
+                <span className="sm:hidden">2.2 MB Vector PDF</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <a
+                  href="/Muhammad_Daud_Ali_Lashari_CV.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyan-400 hover:underline flex items-center gap-1 font-semibold"
+                >
+                  <span>Open PDF in Full Screen</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+                <button
+                  onClick={() => openWhatsApp('Hi Daud, I reviewed your CV dossier and would like to discuss a role.')}
+                  className="text-emerald-400 hover:underline hidden sm:flex items-center gap-1"
+                >
+                  <span>Inquire via WhatsApp</span>
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
