@@ -216,7 +216,7 @@ interface ChatMessage {
   sender: 'bot' | 'user';
   text: string;
   timestamp: string;
-  actions?: { label: string; actionType: 'whatsapp' | 'cv' | 'door' | 'link' | 'timeline'; payload?: string }[];
+  actions?: { label: string; actionType: 'whatsapp' | 'cv' | 'door' | 'link' | 'timeline' | 'achievements'; payload?: string }[];
 }
 
 export default function App() {
@@ -266,13 +266,13 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Rotating Typewriter Headings in Hero (Reel Flex)
+  // Rotating Typewriter Headings in Hero (Reel Flex - General)
   const roles = useMemo(() => [
     'Founder & CEO @ Zepra Tech',
-    'AEIF Top 5 AI Finalist',
     'Full-Stack Systems Architect',
-    'Autonomous Agent Engineer',
-    'Enterprise Solutions Lead'
+    'Hands-On Digital Marketer',
+    'AI Systems & Web Engineer',
+    'Business Development Director'
   ], []);
   const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState('');
@@ -371,7 +371,7 @@ export default function App() {
       badge: 'Production Software Ecosystem',
       doorColor: 'from-emerald-950 via-slate-900 to-slate-950',
       plaqueColor: 'border-emerald-400/80 bg-gradient-to-r from-emerald-600/30 to-teal-500/20 text-emerald-200',
-      lightColor: 'rgba(168, 185, 129, 0.35)',
+      lightColor: 'rgba(16, 185, 129, 0.35)',
       description: 'The digital flagship platform for Zepra Tech, engineering high-throughput web applications, client solutions, and scalable software ecosystems.',
       metrics: [
         { label: 'Role', value: 'Founder & CEO' },
@@ -629,7 +629,7 @@ export default function App() {
       text: "Hello! 👋 I'm Daud's Portfolio AI Agent, trained directly on his verified 2.2MB CV dossier and engineering history. How can I help you today?",
       timestamp: 'Just now',
       actions: [
-        { label: '🏆 5th Worldwide @ AEIF', actionType: 'door', payload: 'sabz-ai' },
+        { label: '🏆 Honors & Hackathons', actionType: 'achievements' },
         { label: '🏢 About Zepra Tech', actionType: 'door', payload: 'zepra-tech' },
         { label: '📄 Download Verified CV', actionType: 'cv' },
         { label: '💬 Chat on WhatsApp', actionType: 'whatsapp' }
@@ -650,21 +650,24 @@ export default function App() {
     // 1. Who is Daud?
     if (q.includes('who') || q.includes('about') || q.includes('daud') || q.includes('bio') || q.includes('profile')) {
       return {
-        text: "Muhammad Daud Ali Lashari is a Full-Stack Systems Architect, Tech Entrepreneur, and Founder & CEO of Zepra Tech (gozepra.tech). He was awarded 5th Worldwide Finalist at the 4th International AEIF AI Showdown 2026 for building the SABZ AI Traffic System. He holds a BS in Computer Science with top honors and specializes in enterprise web architectures, real-time AI computer vision, and autonomous agent systems.",
+        text: "Muhammad Daud Ali Lashari is a Full-Stack Systems Architect, Hands-On Digital Marketer, and Founder & CEO of Zepra Tech (gozepra.tech), based in Lahore, Pakistan. He specializes in enterprise web architectures, real-time AI and computer vision, and autonomous agent systems, backed by a strong computer science background and verified national and global hackathon achievements.",
         actions: [
           { label: '📄 View Verified CV (PDF)', actionType: 'cv' },
+          { label: '⚡ Work Experience', actionType: 'timeline' },
+          { label: '🏆 Honors & Hackathons', actionType: 'achievements' },
           { label: '💬 Message Daud on WhatsApp', actionType: 'whatsapp' }
         ]
       };
     }
 
-    // 2. AEIF / SABZ AI Traffic System
-    if (q.includes('aeif') || q.includes('showdown') || q.includes('sabz') || q.includes('traffic') || q.includes('5th') || q.includes('award')) {
+    // 2. Honors, Hackathons & Key Achievements
+    if (q.includes('hackathon') || q.includes('award') || q.includes('honor') || q.includes('competition') || q.includes('event') || q.includes('achievement') || q.includes('aeif') || q.includes('showdown')) {
       return {
-        text: "At the 4th International AEIF AI Showdown 2026, Daud achieved 5th Worldwide Finalist ranking with the SABZ AI Traffic System! It is an intelligent computer vision engine that processes multi-lane video streams with YOLOv8 at <42ms edge latency, reducing traffic delays by ~34% and automatically giving green-wave priority to emergency responders.",
+        text: "Daud's verified honors and hackathon track record includes:\n• 🏆 5th Position Worldwide (400+ Teams) — 4th International AEIF AI Showdown 2026 for SABZ AI Traffic System (Evaluated by MIT, Silicon Valley & LUMS delegates)\n• 🎖️ Vice Chancellor's High Commendation & Innovation Award (Major General Khalil Dar, Lahore Garrison University)\n• 📜 Smart City Civic Innovation Hackathon Finalist for LahorePulse AI (Presented to Chief of UNICEF Punjab)\n• 🌟 Top 30 National Finalist — National AI Championship 2026 (FAST-NUCES & Persivia KSA)\n• 🏛️ Active Student Leadership, Tech Meetups & Industry Tours Coordinator at LGU\n• 🤝 Humanitarian Logistics Volunteer Lead (2+ Years) at Minhaj Welfare Foundation",
         actions: [
-          { label: '🚪 Open SABZ AI Door', actionType: 'door', payload: 'sabz-ai' },
-          { label: '💬 Inquire on WhatsApp', actionType: 'whatsapp', payload: 'Hi Daud, tell me more about SABZ AI Traffic System.' }
+          { label: '🏆 View Honors & Hackathons', actionType: 'achievements' },
+          { label: '🚪 Inspect SABZ AI Door', actionType: 'door', payload: 'sabz-ai' },
+          { label: '📄 Verified CV (PDF)', actionType: 'cv' }
         ]
       };
     }
@@ -672,7 +675,7 @@ export default function App() {
     // 3. Zepra Tech
     if (q.includes('zepra') || q.includes('company') || q.includes('ceo') || q.includes('founder') || q.includes('gozepra')) {
       return {
-        text: "Zepra Tech (gozepra.tech) is the technology venture founded and led by Muhammad Daud Ali Lashari. The firm delivers high-concurrency enterprise web platforms, cloud-native microservices, modern React/Next.js platforms, and bespoke AI workflows with 99.98% uptime SLA and sub-100ms response times worldwide.",
+        text: "Zepra Tech (gozepra.tech) is the digital agency founded and led by Muhammad Daud Ali Lashari in Lahore, Pakistan. The firm delivers high-concurrency enterprise web platforms, modern React/Next.js platforms, SEO, digital marketing, and bespoke AI workflows with 99.98% uptime SLA.",
         actions: [
           { label: '🌐 Visit gozepra.tech', actionType: 'link', payload: 'https://gozepra.tech' },
           { label: '🚪 Inspect Zepra Door', actionType: 'door', payload: 'zepra-tech' }
@@ -694,9 +697,9 @@ export default function App() {
     // 5. Resume / CV / PDF
     if (q.includes('cv') || q.includes('resume') || q.includes('pdf') || q.includes('dossier') || q.includes('download')) {
       return {
-        text: "Daud's official 2.2 MB High-DPI Executive Dossier was generated directly from his verified LinkedIn credentials using his custom Autonomous Vector Engine. You can view the full preview or download the vector PDF right now!",
+        text: "Daud's official 2.2 MB High-DPI Executive Dossier was generated directly from his verified LinkedIn credentials using his custom Autonomous Vector Engine. You can view the interactive PDF viewer or download the vector PDF right now!",
         actions: [
-          { label: '📄 Download Executive CV (PDF)', actionType: 'cv' }
+          { label: '📄 Open Executive CV (PDF)', actionType: 'cv' }
         ]
       };
     }
@@ -739,7 +742,7 @@ export default function App() {
     // 9. Education
     if (q.includes('education') || q.includes('degree') || q.includes('university') || q.includes('college') || q.includes('study') || q.includes('bscs')) {
       return {
-        text: "Daud completed his Bachelor of Science in Computer Science (BSCS) with high distinction in Algorithms, Data Structures, Operating Systems, Computer Architecture, and Artificial Intelligence, backed by active leadership in technology societies and hackathons.",
+        text: "Daud completed his Bachelor of Science in Computer Science (BSCS) with high distinction in Algorithms, Data Structures, Operating Systems, Computer Architecture, and Artificial Intelligence at Lahore Garrison University, backed by active leadership in technology societies and hackathons.",
         actions: [
           { label: '📄 Academic Honors in CV', actionType: 'cv' },
           { label: '⚡ Back In Time Timeline', actionType: 'timeline' }
@@ -749,9 +752,10 @@ export default function App() {
 
     // Fallback default helpful response
     return {
-      text: `Thanks for asking! As Daud's Portfolio AI Agent, I can tell you about his work as Founder & CEO of Zepra Tech, his 6 verified professional roles, his 5th Worldwide Finalist award at AEIF 2026, his technical stack (React, Next.js 15, Python, AI), or connect you directly with him on WhatsApp.`,
+      text: `Thanks for asking! As Daud's Portfolio AI Agent, I can tell you about his work as Founder & CEO of Zepra Tech, his 6 verified professional roles, his hackathon achievements and awards, his technical stack (React, Next.js 15, Python, AI), or connect you directly with him on WhatsApp.`,
       actions: [
         { label: '⚡ Back In Time Timeline', actionType: 'timeline' },
+        { label: '🏆 Honors & Hackathons', actionType: 'achievements' },
         { label: '💬 Chat on WhatsApp', actionType: 'whatsapp', payload: `Hi Daud, I was asking your AI: "${query}"` },
         { label: '📄 Download Official CV', actionType: 'cv' }
       ]
@@ -798,6 +802,9 @@ export default function App() {
     } else if (action.actionType === 'timeline') {
       window.location.hash = '#timeline';
       setChatOpen(false);
+    } else if (action.actionType === 'achievements') {
+      window.location.hash = '#achievements';
+      setChatOpen(false);
     } else if (action.actionType === 'link' && action.payload) {
       window.open(action.payload, '_blank');
     }
@@ -840,7 +847,7 @@ export default function App() {
                 Muhammad Daud <span className="text-cyan-400">.</span>
               </span>
               <span className="block text-[10px] uppercase font-mono tracking-wider text-slate-400 -mt-1">
-                Zepra Tech • AEIF Top 5
+                Founder &amp; CEO • Zepra Tech
               </span>
             </div>
           </a>
@@ -862,6 +869,12 @@ export default function App() {
               darkMode ? 'text-slate-300 hover:text-white hover:bg-slate-800/50' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}>
               Back In Time
+            </a>
+            <a href="#achievements" className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 ${
+              darkMode ? 'text-amber-400 hover:text-amber-300 hover:bg-slate-800/50' : 'text-amber-600 hover:text-amber-700 hover:bg-slate-100'
+            }`}>
+              <Trophy className="w-3.5 h-3.5" />
+              Honors &amp; Events
             </a>
             <button 
               onClick={() => setEstimatorOpen(true)}
@@ -885,13 +898,13 @@ export default function App() {
 
           {/* Right Header Controls (Clock, Location, Actions) */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Live PKT Clock (Multan, Pakistan UTC+5) */}
+            {/* Live PKT Clock (Lahore, Pakistan UTC+5) */}
             <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-mono ${
               darkMode ? 'border-slate-800 bg-slate-900/80 text-slate-300' : 'border-slate-200 bg-slate-100 text-slate-700'
             }`}>
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
               <MapPin className="w-3 h-3 text-cyan-400" />
-              <span>Multan, PK</span>
+              <span>Lahore, PK</span>
               <span className="text-slate-500">|</span>
               <Clock className="w-3 h-3 text-amber-400" />
               <span className="font-semibold text-cyan-400">{pktTime || '01:25 AM PKT'}</span>
@@ -955,6 +968,13 @@ export default function App() {
             >
               Back In Time (Timeline & Experience)
             </a>
+            <a 
+              href="#achievements" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-lg text-sm font-medium text-amber-400"
+            >
+              Honors, Hackathons &amp; Events
+            </a>
             <button 
               onClick={() => { setMobileMenuOpen(false); setEstimatorOpen(true); }}
               className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-between"
@@ -1010,9 +1030,9 @@ export default function App() {
               <p className={`text-base sm:text-lg leading-relaxed max-w-2xl ${
                 darkMode ? 'text-slate-300' : 'text-slate-600'
               }`}>
-                Founder &amp; CEO at <strong className="text-white font-semibold">Zepra Tech</strong>, 
-                awarded <span className="text-amber-400 font-semibold">5th Worldwide Finalist</span> at the 4th International AEIF AI Showdown 2026. 
-                Engineering intelligent AI systems, high-throughput web applications, and autonomous agent workflows from vision to scale.
+                Founder &amp; CEO at <strong className="text-white font-semibold">Zepra Tech</strong>. 
+                Full-Stack Systems Architect, Hands-On Digital Marketer, and software engineer based in <span className="text-cyan-400 font-medium">Lahore, Pakistan</span>. 
+                Building high-performance web platforms, digital marketing architectures, and scalable intelligent software from concept to production.
               </p>
 
               {/* Primary Call-to-Action Buttons (Reel Style) */}
@@ -1162,7 +1182,7 @@ export default function App() {
                       </span>
                     </div>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                      Top 5 Finalist
+                      Lahore, PK
                     </span>
                   </div>
 
@@ -1222,12 +1242,12 @@ export default function App() {
               <Sparkles className="w-3.5 h-3.5" /> AVAILABLE FOR HIGH-IMPACT VENTURES
             </span>
             <span>•</span>
-            <span className="flex items-center gap-2 text-amber-400 font-bold">
-              <Trophy className="w-3.5 h-3.5" /> 5th WORLDWIDE FINALIST @ 4TH INTERNATIONAL AEIF AI SHOWDOWN 2026
-            </span>
-            <span>•</span>
             <span className="flex items-center gap-2 text-emerald-400 font-bold">
               <Building2 className="w-3.5 h-3.5" /> FOUNDER &amp; CEO AT ZEPRA TECH (GOZEPRA.TECH)
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-2 text-cyan-300 font-bold">
+              <Code2 className="w-3.5 h-3.5" /> FULL-STACK SYSTEMS ARCHITECTURE &amp; DIGITAL MARKETING
             </span>
             <span>•</span>
             <span className="flex items-center gap-2 text-blue-400 font-bold">
@@ -1235,7 +1255,11 @@ export default function App() {
             </span>
             <span>•</span>
             <span className="flex items-center gap-2 text-purple-400 font-bold">
-              <BrainCircuit className="w-3.5 h-3.5" /> AUTONOMOUS MULTI-AGENT SWARMS &amp; COMPUTER VISION
+              <BrainCircuit className="w-3.5 h-3.5" /> MULTI-AGENT SWARMS &amp; EDGE COMPUTER VISION
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-2 text-amber-400 font-bold">
+              <MapPin className="w-3.5 h-3.5" /> BASED IN LAHORE, PAKISTAN • OPEN FOR GLOBAL ROLES
             </span>
             <span>•</span>
           </div>
@@ -1749,6 +1773,295 @@ export default function App() {
         </div>
       </section>
 
+      {/* SECTION 4: HONORS, HACKATHONS & KEY ACHIEVEMENTS (Dedicated Section) */}
+      <section id="achievements" className="py-20 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Section Header */}
+          <div className="text-center max-w-3xl mx-auto space-y-3 mb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs font-mono">
+              <Trophy className="w-3.5 h-3.5 text-amber-400" />
+              <span>HONORS, HACKATHONS &amp; RECOGNITION</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
+              Competitive Milestones &amp; Events <span className="text-amber-400">.</span>
+            </h2>
+            <p className={`text-base max-w-2xl mx-auto ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+              A dedicated archive of competitive hackathons, national championships, academic commendations, and civic leadership from verified LinkedIn activities.
+            </p>
+          </div>
+
+          {/* Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            {/* Card 1: 4th International AEIF AI Showdown 2026 */}
+            <div className={`rounded-3xl border p-6 backdrop-blur-xl transition-all duration-300 flex flex-col justify-between group hover:border-amber-400/60 ${
+              darkMode ? 'bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-slate-950 border-amber-500/30' : 'bg-white border-amber-200 shadow-lg'
+            }`}>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono tracking-wider uppercase px-2.5 py-1 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/30 font-bold">
+                    Global AI Showdown
+                  </span>
+                  <span className="text-xs font-mono text-slate-400">Oct 2026</span>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 text-amber-400 font-extrabold text-2xl font-mono">
+                    <Trophy className="w-6 h-6 text-amber-400 shrink-0" />
+                    <span>5th Worldwide</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-white mt-1">
+                    4th International AEIF Foundation AI Showdown 2026
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1 font-mono">
+                    FAST-NUCES Lahore • Out of 400+ Competing Teams
+                  </p>
+                </div>
+
+                <p className="text-xs leading-relaxed text-slate-300">
+                  Built and submitted <strong className="text-white">SABZ AI-Adaptive Traffic Signals</strong>, a sub-42ms edge computer vision engine optimizing multi-lane junction congestion and clearing automated green corridors for emergency responders.
+                </p>
+
+                <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                  <span className="font-semibold text-slate-300 block">International Jury:</span>
+                  <p>Evaluated by delegates from MIT (Dr. Fan), Silicon Valley (Dr. Steven), LUMS (Dr. Saffiullah Chaudhry), and UBAAS faculty.</p>
+                </div>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                {['5th Worldwide', '400+ Teams', 'FAST-NUCES', 'Edge AI', 'SABZ AI'].map(b => (
+                  <span key={b} className="px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800/60 text-slate-300">
+                    {b}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Card 2: VC High Commendation Award */}
+            <div className={`rounded-3xl border p-6 backdrop-blur-xl transition-all duration-300 flex flex-col justify-between group hover:border-cyan-400/60 ${
+              darkMode ? 'bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-slate-950 border-cyan-500/30' : 'bg-white border-cyan-200 shadow-lg'
+            }`}>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono tracking-wider uppercase px-2.5 py-1 rounded-full bg-cyan-400/10 text-cyan-400 border border-cyan-400/30 font-bold">
+                    University Commendation
+                  </span>
+                  <span className="text-xs font-mono text-slate-400">Oct 2026</span>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-2xl font-mono">
+                    <Award className="w-6 h-6 text-cyan-400 shrink-0" />
+                    <span>VC Commendation</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-white mt-1">
+                    Vice Chancellor's Innovation &amp; Research Award
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1 font-mono">
+                    Lahore Garrison University (LGU)
+                  </p>
+                </div>
+
+                <p className="text-xs leading-relaxed text-slate-300">
+                  Awarded high commendation by <strong className="text-white">Major General Khalil Dar</strong> (Vice Chancellor, LGU) for technology leadership and applied research excellence.
+                </p>
+
+                <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                  <span className="font-semibold text-slate-300 block">Government Feasibility Trial:</span>
+                  <p>Secured dedicated university laboratory resources and research backing for smart city pilot feasibility trials with Government of Pakistan authorities.</p>
+                </div>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                {['Major Gen Khalil Dar', 'High Commendation', 'Lab Backing', 'LGU', 'Civic Pilot'].map(b => (
+                  <span key={b} className="px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800/60 text-slate-300">
+                    {b}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Card 3: Smart City Civic Innovation Hackathon */}
+            <div className={`rounded-3xl border p-6 backdrop-blur-xl transition-all duration-300 flex flex-col justify-between group hover:border-emerald-400/60 ${
+              darkMode ? 'bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-slate-950 border-emerald-500/30' : 'bg-white border-emerald-200 shadow-lg'
+            }`}>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono tracking-wider uppercase px-2.5 py-1 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/30 font-bold">
+                    Civic Tech Hackathon
+                  </span>
+                  <span className="text-xs font-mono text-slate-400">2026</span>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 text-emerald-400 font-extrabold text-2xl font-mono">
+                    <Rocket className="w-6 h-6 text-emerald-400 shrink-0" />
+                    <span>Civic Finalist</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-white mt-1">
+                    Smart City Civic Innovation Hackathon
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1 font-mono">
+                    City Intelligence Track • LahorePulse AI
+                  </p>
+                </div>
+
+                <p className="text-xs leading-relaxed text-slate-300">
+                  Architected <strong className="text-white">LahorePulse AI</strong>, an urban data aggregation and incident triage platform for civic responders and municipal infrastructure.
+                </p>
+
+                <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                  <span className="font-semibold text-slate-300 block">Dignitary Presentation:</span>
+                  <p>Presented before Chief Guest <strong>Mr. Ramiz Behduvoa</strong> (Chief of UNICEF Punjab) and high officials from the AI Office of Punjab.</p>
+                </div>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                {['UNICEF Punjab', 'Civic Intelligence', 'LahorePulse AI', 'Smart City Track'].map(b => (
+                  <span key={b} className="px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800/60 text-slate-300">
+                    {b}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Card 4: National AI Championship 2026 */}
+            <div className={`rounded-3xl border p-6 backdrop-blur-xl transition-all duration-300 flex flex-col justify-between group hover:border-purple-400/60 ${
+              darkMode ? 'bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-slate-950 border-purple-500/30' : 'bg-white border-purple-200 shadow-lg'
+            }`}>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono tracking-wider uppercase px-2.5 py-1 rounded-full bg-purple-400/10 text-purple-400 border border-purple-400/30 font-bold">
+                    National Championship
+                  </span>
+                  <span className="text-xs font-mono text-slate-400">2026</span>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 text-purple-400 font-extrabold text-2xl font-mono">
+                    <CheckCircle2 className="w-6 h-6 text-purple-400 shrink-0" />
+                    <span>Top 30 Finalist</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-white mt-1">
+                    National AI Championship 2026
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1 font-mono">
+                    FAST-NUCES &amp; Persivia KSA
+                  </p>
+                </div>
+
+                <p className="text-xs leading-relaxed text-slate-300">
+                  Earned an official Certificate of Achievement and Top 30 nationwide standing in competitive AI engineering, rapid model training, and algorithmic optimization.
+                </p>
+
+                <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                  <span className="font-semibold text-slate-300 block">Competition Focus:</span>
+                  <p>Real-time data processing, predictive pipeline development, and low-latency API architecture under intense tournament constraints.</p>
+                </div>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                {['Top 30 Nationwide', 'FAST-NUCES', 'Persivia KSA', 'National Finalist'].map(b => (
+                  <span key={b} className="px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800/60 text-slate-300">
+                    {b}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Card 5: Campus Leadership & Tech Meetups */}
+            <div className={`rounded-3xl border p-6 backdrop-blur-xl transition-all duration-300 flex flex-col justify-between group hover:border-blue-400/60 ${
+              darkMode ? 'bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-slate-950 border-blue-500/30' : 'bg-white border-blue-200 shadow-lg'
+            }`}>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono tracking-wider uppercase px-2.5 py-1 rounded-full bg-blue-400/10 text-blue-400 border border-blue-400/30 font-bold">
+                    Campus Leadership
+                  </span>
+                  <span className="text-xs font-mono text-slate-400">Sep 2025 – Present</span>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 text-blue-400 font-extrabold text-2xl font-mono">
+                    <Users className="w-6 h-6 text-blue-400 shrink-0" />
+                    <span>Tech Meetups &amp; Tours</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-white mt-1">
+                    Student Activities &amp; Mentorship Lead
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1 font-mono">
+                    Lahore Garrison University (BSCS, Grade A)
+                  </p>
+                </div>
+
+                <p className="text-xs leading-relaxed text-slate-300">
+                  Spearheading university technical initiatives including coding hackathons, corporate technology tours to IT parks, and entrepreneurship circles.
+                </p>
+
+                <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                  <span className="font-semibold text-slate-300 block">Executive Networking:</span>
+                  <p>Organizing industry tours connecting students with CTOs, software house founders, and technology leaders across Lahore's ecosystem.</p>
+                </div>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                {['Hackathons', 'Tech Tours', 'Student Mentorship', 'LGU Societies', 'Grade A'].map(b => (
+                  <span key={b} className="px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800/60 text-slate-300">
+                    {b}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Card 6: Volunteer Logistics & Thought Leadership */}
+            <div className={`rounded-3xl border p-6 backdrop-blur-xl transition-all duration-300 flex flex-col justify-between group hover:border-pink-400/60 ${
+              darkMode ? 'bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-slate-950 border-pink-500/30' : 'bg-white border-pink-200 shadow-lg'
+            }`}>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono tracking-wider uppercase px-2.5 py-1 rounded-full bg-pink-400/10 text-pink-400 border border-pink-400/30 font-bold">
+                    Volunteering &amp; Writing
+                  </span>
+                  <span className="text-xs font-mono text-slate-400">2+ Years</span>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 text-pink-400 font-extrabold text-2xl font-mono">
+                    <FileText className="w-6 h-6 text-pink-400 shrink-0" />
+                    <span>Community &amp; Articles</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-white mt-1">
+                    Logistics Lead &amp; Published Author
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1 font-mono">
+                    Minhaj Welfare Foundation &amp; LinkedIn Publishing
+                  </p>
+                </div>
+
+                <p className="text-xs leading-relaxed text-slate-300">
+                  Served as Humanitarian Logistics Volunteer Lead for 2+ years coordinating relief distribution, alongside writing 4 published LinkedIn thought leadership articles.
+                </p>
+
+                <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                  <span className="font-semibold text-slate-300 block">Published Articles:</span>
+                  <p>In-depth insights on AI in modern SEO, digital agency operational scaling, and enterprise software startup engineering.</p>
+                </div>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                {['2+ Yrs Volunteer', 'Minhaj Welfare', '4x Author', 'Thought Leadership'].map(b => (
+                  <span key={b} className="px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800/60 text-slate-300">
+                    {b}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* SECTION 4: INTERACTIVE ESTIMATOR & SCOPING PREVIEW */}
       <section className="py-16 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1885,7 +2198,7 @@ export default function App() {
               </p>
               <div className="space-y-1.5 text-slate-300">
                 <p className="flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-cyan-400" /> Multan, Punjab, Pakistan
+                  <MapPin className="w-3.5 h-3.5 text-cyan-400" /> Lahore, Punjab, Pakistan
                 </p>
                 <p className="font-mono text-cyan-400 flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-amber-400" /> Local Time: {pktTime || '01:25 AM PKT'}
@@ -2135,7 +2448,7 @@ export default function App() {
               'Who is Daud?',
               'Work Experience',
               'Zepra Tech',
-              'AEIF Top 5 Award',
+              'Honors & Events',
               'Skills & Stack',
               'Download CV',
               'WhatsApp & Hire'
@@ -2453,7 +2766,7 @@ export default function App() {
             )}
 
             <div className="pt-4 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-              <span>📍 Multan, PK (UTC+5)</span>
+              <span>📍 Lahore, PK (UTC+5)</span>
               <span>⚡ Typical reply: &lt; 2 hrs</span>
             </div>
           </div>
@@ -2492,6 +2805,7 @@ export default function App() {
               {[
                 { title: 'The Doors (Flagship Projects)', href: '#doors', icon: Sparkles },
                 { title: 'Back In Time (Timeline & Experience)', href: '#timeline', icon: Clock },
+                { title: 'Honors, Hackathons & Key Events', href: '#achievements', icon: Trophy },
                 { title: 'Talk to Daud AI Agent', action: () => { setCommandPaletteOpen(false); setChatOpen(true); }, icon: Bot },
                 { title: 'Launch ROI & Scope Calculator', action: () => { setCommandPaletteOpen(false); setEstimatorOpen(true); }, icon: Calculator },
                 { title: 'Download Executive CV Dossier (PDF)', action: () => { setCommandPaletteOpen(false); setDossierModalOpen(true); }, icon: Download },

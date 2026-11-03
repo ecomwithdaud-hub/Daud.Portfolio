@@ -127,7 +127,10 @@
         chevronRight: <polyline points="9 18 15 12 9 6"/>,
         command: <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/>,
         close: <><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></>,
-        building: <><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/></>
+        building: <><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/></>,
+        users: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
+        star: <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>,
+        shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
       };
 
       return (
@@ -251,7 +254,7 @@
           sender: 'bot',
           text: "Hello! 👋 I'm Daud's Portfolio AI Agent, trained directly on his verified 2.2MB CV dossier and engineering history. How can I help you today?",
           actions: [
-            { label: '🏆 5th Worldwide @ AEIF', type: 'door', payload: 'sabz-ai' },
+            { label: '🏆 Honors & Hackathons', type: 'achievements' },
             { label: '🏢 About Zepra Tech', type: 'door', payload: 'zepra-tech' },
             { label: '📄 Download Verified CV', type: 'cv' },
             { label: '💬 Chat on WhatsApp', type: 'whatsapp' }
@@ -281,13 +284,13 @@
         }, 280);
       };
 
-      // Typewriter rotating headlines
+      // Typewriter rotating headlines (General)
       const roles = [
         'Founder & CEO @ Zepra Tech',
-        'AEIF Top 5 AI Finalist',
         'Full-Stack Systems Architect',
-        'Autonomous Agent Engineer',
-        'Enterprise Solutions Lead'
+        'Hands-On Digital Marketer',
+        'AI Systems & Web Engineer',
+        'Business Development Director'
       ];
       const [roleIdx, setRoleIdx] = useState(0);
       const [text, setText] = useState('');
@@ -581,15 +584,20 @@
 
         setTimeout(() => {
           const q = query.toLowerCase();
-          let botText = "Muhammad Daud Ali Lashari is Founder & CEO of Zepra Tech (gozepra.tech), awarded 5th Worldwide Finalist at AEIF AI Showdown 2026, and full-stack software architect specializing in AI systems, React/Next.js, and autonomous agent workflows.";
+          let botText = "Muhammad Daud Ali Lashari is a Full-Stack Systems Architect, Hands-On Digital Marketer, and Founder & CEO of Zepra Tech (gozepra.tech), based in Lahore, Pakistan. He specializes in enterprise web architectures, real-time AI and computer vision, and autonomous agent systems, backed by a strong computer science background and verified national and global hackathon achievements.";
           let actions = [
             { label: '💬 Chat on WhatsApp', type: 'whatsapp' },
-            { label: '📄 View Verified CV (PDF)', type: 'cv' }
+            { label: '📄 View Verified CV (PDF)', type: 'cv' },
+            { label: '🏆 Honors & Hackathons', type: 'achievements' }
           ];
 
-          if (q.includes('aeif') || q.includes('sabz') || q.includes('traffic') || q.includes('5th')) {
-            botText = "At the 4th International AEIF AI Showdown 2026, Daud achieved 5th Worldwide Finalist ranking with SABZ AI Traffic System! It uses YOLOv8 edge computer vision at <42ms latency, reducing urban congestion by 34% and prioritizing emergency vehicles.";
-            actions = [{ label: '🚪 Open SABZ AI Door', type: 'door', payload: 'sabz-ai' }, { label: '💬 Inquire on WhatsApp', type: 'whatsapp' }];
+          if (q.includes('hackathon') || q.includes('award') || q.includes('honor') || q.includes('competition') || q.includes('event') || q.includes('achievement') || q.includes('aeif') || q.includes('showdown')) {
+            botText = "Daud's verified honors and hackathon track record includes:\n• 🏆 5th Position Worldwide (400+ Teams) — 4th International AEIF AI Showdown 2026 for SABZ AI Traffic System (Evaluated by MIT, Silicon Valley & LUMS delegates)\n• 🎖️ Vice Chancellor's High Commendation & Innovation Award (Major General Khalil Dar, Lahore Garrison University)\n• 📜 Smart City Civic Innovation Hackathon Finalist for LahorePulse AI (Presented to Chief of UNICEF Punjab)\n• 🏅 Top 30 National Finalist — National AI Championship 2026 (FAST-NUCES & Persivia KSA)\n• 👥 Active Student Leadership, Tech Meetups & Industry Tours Coordinator at LGU\n• 🤝 Humanitarian Logistics Volunteer Lead (2+ Years) at Minhaj Welfare Foundation";
+            actions = [
+              { label: '🏆 View Honors & Hackathons', type: 'achievements' },
+              { label: '🚪 SABZ AI System Portal', type: 'door', payload: 'sabz-ai' },
+              { label: '📄 View Verified CV (PDF)', type: 'cv' }
+            ];
           } else if (q.includes('experience') || q.includes('career') || q.includes('history') || q.includes('job') || q.includes('work') || q.includes('role')) {
             botText = "Daud's verified career history includes:\n• Founder & CEO — Zepra Tech Digital Agency (Feb 2025 – Present)\n• Director of Business Development (US Remote Freelance, May 2026 – Present)\n• Exclusive Sales Agent — GSG Technology Co. (Jan 2026 – Present)\n• Appointment Scheduler — Integrated IT Training (US Remote, Jan 2026 – Present)\n• Customer Support Representative — Planlab Solutions (Apr 2025 – Apr 2026)\n• SMS & Email Marketing Specialist — QUICKSOL LLC (Jul 2024 – Aug 2024)\n• BS in Computer Science (BSCS Degree)";
             actions = [{ label: '⚡ Back In Time Timeline', type: 'timeline' }, { label: '📄 View Verified CV (PDF)', type: 'cv' }];
@@ -613,6 +621,7 @@
         else if (act.type === 'cv') setDossierModalOpen(true);
         else if (act.type === 'door') { setActiveDoorId(act.payload); window.location.hash = '#doors'; }
         else if (act.type === 'timeline') { window.location.hash = '#timeline'; setChatOpen(false); }
+        else if (act.type === 'achievements') { window.location.hash = '#achievements'; setChatOpen(false); }
         else if (act.type === 'link') window.open(act.payload, '_blank');
       };
 
@@ -629,7 +638,7 @@
                 </div>
                 <div>
                   <span className="font-bold text-base tracking-tight">Muhammad Daud <span className="text-cyan-400">.</span></span>
-                  <span className="block text-[10px] font-mono text-slate-400 -mt-1">Zepra Tech • AEIF Top 5</span>
+                  <span className="block text-[10px] font-mono text-slate-400 -mt-1">Founder &amp; CEO • Zepra Tech</span>
                 </div>
               </div>
 
@@ -639,6 +648,9 @@
                   <Icon name="sparkles" className="w-3.5 h-3.5 text-amber-400" /> The Doors
                 </a>
                 <a href="#timeline" className="px-3 py-1.5 rounded-lg text-xs font-medium hover:text-cyan-400">Back In Time</a>
+                <a href="#achievements" className="px-3 py-1.5 rounded-lg text-xs font-medium hover:text-cyan-400 flex items-center gap-1">
+                  <Icon name="trophy" className="w-3.5 h-3.5 text-cyan-400" /> Honors &amp; Events
+                </a>
                 <button onClick={() => setChatOpen(true)} className="px-3 py-1.5 rounded-lg text-xs font-medium text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
                   <Icon name="bot" className="w-3.5 h-3.5" /> AI Agent
                 </button>
@@ -651,7 +663,7 @@
                 <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-mono ${darkMode ? 'border-slate-800 bg-slate-900 text-slate-300' : 'border-slate-200 bg-slate-100 text-slate-700'}`}>
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                   <Icon name="pin" className="w-3 h-3 text-cyan-400" />
-                  <span>Multan, PK</span>
+                  <span>Lahore, PK</span>
                   <span className="text-slate-500">|</span>
                   <span className="text-cyan-400 font-bold">{pktTime || '01:25 AM PKT'}</span>
                 </div>
@@ -688,7 +700,7 @@
                   </div>
 
                   <p className="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed">
-                    Founder &amp; CEO at <strong className="text-white">Zepra Tech</strong>, awarded <span className="text-amber-400 font-semibold">5th Worldwide Finalist</span> at the 4th International AEIF AI Showdown 2026. Engineering intelligent AI systems, high-throughput web applications, and autonomous agent workflows from vision to scale.
+                    Founder &amp; CEO at <strong className="text-white">Zepra Tech</strong>, Full-Stack Systems Architect, Hands-On Digital Marketer, and AI Engineer based in <strong className="text-white">Lahore, Pakistan</strong>. Engineering intelligent AI architectures, real-time edge vision, high-conversion growth systems, and production web platforms from vision to scale.
                   </p>
 
                   <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -738,7 +750,7 @@
                         <span className="text-[11px] font-mono uppercase text-slate-400 flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Executive Ability Card
                         </span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">Top 5 Finalist</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">Lahore, PK</span>
                       </div>
 
                       <div className="relative rounded-2xl overflow-hidden aspect-[4/5] bg-slate-950 border border-slate-800">
@@ -769,11 +781,15 @@
               <div className="animate-marquee font-mono text-xs uppercase tracking-widest text-slate-400 gap-8">
                 <span className="text-cyan-400 font-bold flex items-center gap-1">✦ AVAILABLE FOR HIGH-IMPACT VENTURES</span>
                 <span>•</span>
-                <span className="text-amber-400 font-bold flex items-center gap-1">✦ 5th WORLDWIDE FINALIST @ 4TH AEIF AI SHOWDOWN 2026</span>
+                <span className="text-amber-400 font-bold flex items-center gap-1">✦ FOUNDER &amp; CEO AT ZEPRA TECH (GOZEPRA.TECH)</span>
                 <span>•</span>
-                <span className="text-emerald-400 font-bold flex items-center gap-1">✦ FOUNDER &amp; CEO AT ZEPRA TECH (GOZEPRA.TECH)</span>
+                <span className="text-emerald-400 font-bold flex items-center gap-1">✦ FULL-STACK SYSTEMS ARCHITECTURE &amp; DIGITAL MARKETING</span>
                 <span>•</span>
                 <span className="text-blue-400 font-bold flex items-center gap-1">✦ LINKEDIN AUTONOMOUS RESUME &amp; DOSSIER ENGINE</span>
+                <span>•</span>
+                <span className="text-purple-400 font-bold flex items-center gap-1">✦ MULTI-AGENT SWARMS</span>
+                <span>•</span>
+                <span className="text-cyan-400 font-bold flex items-center gap-1">✦ BASED IN LAHORE, PAKISTAN • OPEN FOR GLOBAL ROLES</span>
                 <span>•</span>
               </div>
             </div>
@@ -1022,6 +1038,295 @@
             </div>
           </section>
 
+          {/* SECTION 4: HONORS, HACKATHONS & RECOGNITION (Dedicated Section) */}
+          <section id="achievements" className="py-20 relative overflow-hidden">
+            <div className="max-w-7xl mx-auto px-4">
+              
+              {/* Section Header */}
+              <div className="text-center max-w-3xl mx-auto space-y-3 mb-16">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs font-mono">
+                  <Icon name="trophy" className="w-3.5 h-3.5 text-amber-400" />
+                  <span>HONORS, HACKATHONS &amp; RECOGNITION</span>
+                </div>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
+                  Competitive Milestones &amp; Events <span className="text-amber-400">.</span>
+                </h2>
+                <p className={`text-base max-w-2xl mx-auto ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                  A dedicated archive of competitive hackathons, national championships, academic commendations, and civic leadership from verified LinkedIn activities.
+                </p>
+              </div>
+
+              {/* Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                {/* Card 1: 4th International AEIF AI Showdown 2026 */}
+                <div className={`rounded-3xl border p-6 backdrop-blur-xl transition-all duration-300 flex flex-col justify-between group hover:border-amber-400/60 ${
+                  darkMode ? 'bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-slate-950 border-amber-500/30' : 'bg-white border-amber-200 shadow-lg'
+                }`}>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono tracking-wider uppercase px-2.5 py-1 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/30 font-bold">
+                        Global AI Showdown
+                      </span>
+                      <span className="text-xs font-mono text-slate-400">Oct 2026</span>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 text-amber-400 font-extrabold text-2xl font-mono">
+                        <Icon name="trophy" className="w-6 h-6 text-amber-400 shrink-0" />
+                        <span>5th Worldwide</span>
+                      </div>
+                      <h3 className="text-lg font-bold text-white mt-1">
+                        4th International AEIF Foundation AI Showdown 2026
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-1 font-mono">
+                        FAST-NUCES Lahore • Out of 400+ Competing Teams
+                      </p>
+                    </div>
+
+                    <p className="text-xs leading-relaxed text-slate-300">
+                      Ranked 5th internationally for engineering <strong className="text-amber-300">SABZ AI Traffic System</strong> — an edge computer vision traffic optimizer delivering &lt;42ms latency and dynamic green-wave signals for emergency responders.
+                    </p>
+
+                    <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                      <span className="font-semibold text-slate-300 block">Distinguished Jury Panel:</span>
+                      <p>Evaluated by technical delegates from MIT, Silicon Valley entrepreneurs, and LUMS researchers.</p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 mt-4 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                    {['SABZ AI Engine', 'Computer Vision', 'YOLOv8 Edge', 'Top 5 / 400+', 'FAST-NUCES'].map(b => (
+                      <span key={b} className="px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800/60 text-slate-300">
+                        {b}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Card 2: Vice Chancellor's High Commendation Award */}
+                <div className={`rounded-3xl border p-6 backdrop-blur-xl transition-all duration-300 flex flex-col justify-between group hover:border-emerald-400/60 ${
+                  darkMode ? 'bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-slate-950 border-emerald-500/30' : 'bg-white border-emerald-200 shadow-lg'
+                }`}>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono tracking-wider uppercase px-2.5 py-1 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/30 font-bold">
+                        Institutional Honor
+                      </span>
+                      <span className="text-xs font-mono text-slate-400">2026</span>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 text-emerald-400 font-extrabold text-2xl font-mono">
+                        <Icon name="award" className="w-6 h-6 text-emerald-400 shrink-0" />
+                        <span>VC Commendation</span>
+                      </div>
+                      <h3 className="text-lg font-bold text-white mt-1">
+                        Vice Chancellor's Innovation &amp; Research Award
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-1 font-mono">
+                        Conferred by Major General Khalil Dar • Lahore Garrison University
+                      </p>
+                    </div>
+
+                    <p className="text-xs leading-relaxed text-slate-300">
+                      Personally awarded top institutional honor for cutting-edge engineering research and architectural excellence in intelligent real-world systems.
+                    </p>
+
+                    <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                      <span className="font-semibold text-slate-300 block">Research Impact:</span>
+                      <p>System designated as benchmark candidate for internal university lab simulation and smart urban feasibility trials.</p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 mt-4 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                    {['VC Award', 'Maj Gen Khalil Dar', 'R&D Honors', 'LGU High Honors'].map(b => (
+                      <span key={b} className="px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800/60 text-slate-300">
+                        {b}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Card 3: Smart City Civic Innovation Hackathon */}
+                <div className={`rounded-3xl border p-6 backdrop-blur-xl transition-all duration-300 flex flex-col justify-between group hover:border-cyan-400/60 ${
+                  darkMode ? 'bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-slate-950 border-cyan-500/30' : 'bg-white border-cyan-200 shadow-lg'
+                }`}>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono tracking-wider uppercase px-2.5 py-1 rounded-full bg-cyan-400/10 text-cyan-400 border border-cyan-400/30 font-bold">
+                        Civic Tech Finalist
+                      </span>
+                      <span className="text-xs font-mono text-slate-400">2026</span>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 text-cyan-400 font-extrabold text-2xl font-mono">
+                        <Icon name="sparkles" className="w-6 h-6 text-cyan-400 shrink-0" />
+                        <span>Civic Finalist</span>
+                      </div>
+                      <h3 className="text-lg font-bold text-white mt-1">
+                        Smart City Civic Innovation Hackathon
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-1 font-mono">
+                        Civic Tech Consortium • Lahore Chapter
+                      </p>
+                    </div>
+
+                    <p className="text-xs leading-relaxed text-slate-300">
+                      Built and presented <strong className="text-cyan-300">LahorePulse AI</strong> — an AI system analyzing municipal traffic bottlenecks and urban pollution trends.
+                    </p>
+
+                    <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                      <span className="font-semibold text-slate-300 block">High-Level Audience:</span>
+                      <p>Demonstrated to Chief of UNICEF Field Office Punjab (Mr. Ramiz Behbudov) and provincial civic leaders.</p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 mt-4 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                    {['UNICEF Presentation', 'LahorePulse AI', 'Civic Data', 'Urban AI'].map(b => (
+                      <span key={b} className="px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800/60 text-slate-300">
+                        {b}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Card 4: National AI Championship 2026 */}
+                <div className={`rounded-3xl border p-6 backdrop-blur-xl transition-all duration-300 flex flex-col justify-between group hover:border-purple-400/60 ${
+                  darkMode ? 'bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-slate-950 border-purple-500/30' : 'bg-white border-purple-200 shadow-lg'
+                }`}>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono tracking-wider uppercase px-2.5 py-1 rounded-full bg-purple-400/10 text-purple-400 border border-purple-400/30 font-bold">
+                        National Hackathon
+                      </span>
+                      <span className="text-xs font-mono text-slate-400">2026</span>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 text-purple-400 font-extrabold text-2xl font-mono">
+                        <Icon name="code" className="w-6 h-6 text-purple-400 shrink-0" />
+                        <span>Top 30 Nationally</span>
+                      </div>
+                      <h3 className="text-lg font-bold text-white mt-1">
+                        National AI Championship 2026
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-1 font-mono">
+                        FAST-NUCES &amp; Persivia KSA / Pakistan
+                      </p>
+                    </div>
+
+                    <p className="text-xs leading-relaxed text-slate-300">
+                      Selected among top 30 developer teams out of hundreds of nationwide applicants. Built high-throughput data processing models and real-time streaming architectures.
+                    </p>
+
+                    <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                      <span className="font-semibold text-slate-300 block">Competition Rigor:</span>
+                      <p>Timed 36-hour sprint testing extreme scale, algorithmic efficiency, and live automated judge test harnesses.</p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 mt-4 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                    {['Top 30 Finalist', 'Persivia KSA', '36hr Hackathon', 'FAST-NUCES'].map(b => (
+                      <span key={b} className="px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800/60 text-slate-300">
+                        {b}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Card 5: Campus Leadership & Tech Meetups */}
+                <div className={`rounded-3xl border p-6 backdrop-blur-xl transition-all duration-300 flex flex-col justify-between group hover:border-blue-400/60 ${
+                  darkMode ? 'bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-slate-950 border-blue-500/30' : 'bg-white border-blue-200 shadow-lg'
+                }`}>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono tracking-wider uppercase px-2.5 py-1 rounded-full bg-blue-400/10 text-blue-400 border border-blue-400/30 font-bold">
+                        Campus Leadership
+                      </span>
+                      <span className="text-xs font-mono text-slate-400">Sep 2025 – Present</span>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 text-blue-400 font-extrabold text-2xl font-mono">
+                        <Icon name="users" className="w-6 h-6 text-blue-400 shrink-0" />
+                        <span>Tech Meetups &amp; Tours</span>
+                      </div>
+                      <h3 className="text-lg font-bold text-white mt-1">
+                        Student Activities &amp; Mentorship Lead
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-1 font-mono">
+                        Lahore Garrison University (BSCS, Grade A)
+                      </p>
+                    </div>
+
+                    <p className="text-xs leading-relaxed text-slate-300">
+                      Spearheading university technical initiatives including coding hackathons, corporate technology tours to IT parks, and entrepreneurship circles.
+                    </p>
+
+                    <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                      <span className="font-semibold text-slate-300 block">Executive Networking:</span>
+                      <p>Organizing industry tours connecting students with CTOs, software house founders, and technology leaders across Lahore's ecosystem.</p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 mt-4 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                    {['Hackathons', 'Tech Tours', 'Student Mentorship', 'LGU Societies', 'Grade A'].map(b => (
+                      <span key={b} className="px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800/60 text-slate-300">
+                        {b}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Card 6: Volunteer Logistics & Thought Leadership */}
+                <div className={`rounded-3xl border p-6 backdrop-blur-xl transition-all duration-300 flex flex-col justify-between group hover:border-pink-400/60 ${
+                  darkMode ? 'bg-gradient-to-b from-slate-900/95 via-slate-900/80 to-slate-950 border-pink-500/30' : 'bg-white border-pink-200 shadow-lg'
+                }`}>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono tracking-wider uppercase px-2.5 py-1 rounded-full bg-pink-400/10 text-pink-400 border border-pink-400/30 font-bold">
+                        Volunteering &amp; Writing
+                      </span>
+                      <span className="text-xs font-mono text-slate-400">2+ Years</span>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 text-pink-400 font-extrabold text-2xl font-mono">
+                        <Icon name="fileText" className="w-6 h-6 text-pink-400 shrink-0" />
+                        <span>Community &amp; Articles</span>
+                      </div>
+                      <h3 className="text-lg font-bold text-white mt-1">
+                        Logistics Lead &amp; Published Author
+                      </h3>
+                      <p className="text-xs text-slate-400 mt-1 font-mono">
+                        Minhaj Welfare Foundation &amp; LinkedIn Publishing
+                      </p>
+                    </div>
+
+                    <p className="text-xs leading-relaxed text-slate-300">
+                      Served as Humanitarian Logistics Volunteer Lead for 2+ years coordinating relief distribution, alongside writing 4 published LinkedIn thought leadership articles.
+                    </p>
+
+                    <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                      <span className="font-semibold text-slate-300 block">Published Articles:</span>
+                      <p>In-depth insights on AI in modern SEO, digital agency operational scaling, and enterprise software startup engineering.</p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 mt-4 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                    {['2+ Yrs Volunteer', 'Minhaj Welfare', '4x Author', 'Thought Leadership'].map(b => (
+                      <span key={b} className="px-2 py-0.5 rounded text-[10px] font-mono border border-slate-700 bg-slate-800/60 text-slate-300">
+                        {b}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
           {/* FOOTER */}
           <footer id="contact" className="pt-20 pb-12 border-t border-slate-800 bg-[#070a12]">
             <div className="max-w-7xl mx-auto px-4">
@@ -1159,7 +1464,7 @@
 
               {/* Chips */}
               <div className="px-3 py-2 bg-slate-900/70 border-t border-slate-800 flex items-center gap-1.5 overflow-x-auto text-[10px]">
-                {['Who is Daud?', 'Experience', 'Zepra Tech', 'AEIF Top 5 Award', 'Skills', 'Download CV', 'Socials'].map(c => (
+                {['Who is Daud?', 'Experience', 'Zepra Tech', 'Honors & Events', 'Skills', 'Download CV', 'Socials'].map(c => (
                   <button key={c} onClick={() => handleSendChat(c)} className="px-2 py-0.5 rounded-full border border-slate-700 bg-slate-800 text-slate-300 hover:border-cyan-400 hover:text-cyan-300 whitespace-nowrap">
                     {c}
                   </button>
