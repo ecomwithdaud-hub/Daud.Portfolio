@@ -753,9 +753,15 @@
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">Lahore, PK</span>
                       </div>
 
-                      <div className="relative rounded-2xl overflow-hidden aspect-[4/5] bg-slate-950 border border-slate-800">
-                        <img src="./profile.png" alt="Muhammad Daud Ali Lashari" className="w-full h-full object-cover object-top" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+                      <div className="relative rounded-2xl overflow-hidden aspect-[4/5] bg-slate-950 border border-slate-800 shadow-2xl">
+                        <img 
+                          src="./profile.png" 
+                          alt="Muhammad Daud Ali Lashari" 
+                          loading="eager"
+                          className="w-full h-full object-cover object-top filter contrast-[1.02] transition-transform duration-700 group-hover:scale-105" 
+                          style={{ imageRendering: '-webkit-optimize-contrast' }}
+                        />
+                        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-transparent pointer-events-none" />
                         <div className="absolute bottom-3 inset-x-3 p-3 rounded-xl backdrop-blur-md bg-slate-950/85 border border-slate-700">
                           <p className="text-xs font-bold text-white">Muhammad Daud Ali Lashari</p>
                           <p className="text-[10px] text-cyan-300 font-mono">Founder &amp; CEO • Zepra Tech</p>

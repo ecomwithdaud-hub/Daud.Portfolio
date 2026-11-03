@@ -1187,15 +1187,18 @@ export default function App() {
                   </div>
 
                   {/* Daud's Photograph in Suit */}
-                  <div className="relative rounded-2xl overflow-hidden aspect-[4/5] bg-gradient-to-b from-slate-800 to-slate-950 border border-slate-800/80">
+                  <div className="relative rounded-2xl overflow-hidden aspect-[4/5] bg-gradient-to-b from-slate-850 to-slate-950 border border-slate-800/80 shadow-2xl">
                     <img
                       src="/profile.png"
                       alt="Muhammad Daud Ali Lashari"
-                      className="w-full h-full object-cover object-top filter contrast-[1.03] brightness-[0.98] transition-transform duration-700 group-hover:scale-105"
+                      loading="eager"
+                      decoding="async"
+                      className="w-full h-full object-cover object-top filter contrast-[1.02] transition-transform duration-700 group-hover:scale-105"
+                      style={{ imageRendering: '-webkit-optimize-contrast' }}
                     />
 
-                    {/* Gradient Overlay for Corporate Vignette */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+                    {/* Non-intrusive bottom gradient solely behind the badge */}
+                    <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-transparent pointer-events-none" />
 
                     {/* Floating Corner Achievement Pill */}
                     <div className="absolute bottom-3 left-3 right-3 p-3 rounded-xl backdrop-blur-md bg-slate-950/80 border border-slate-700/60 shadow-lg">
